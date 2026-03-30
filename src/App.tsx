@@ -53,6 +53,7 @@ function App() {
   const [result, setResult] = useState<CalculationResult | null>(null)
   const [copyFeedback, setCopyFeedback] = useState('')
   const [highlightedCombo, setHighlightedCombo] = useState<string | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
   const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
@@ -216,16 +217,33 @@ function App() {
 
     event.preventDefault()
     commitCardsLeft(playerId)
-    cardInputRefs.current[index + 1]?.focus()
-    cardInputRefs.current[index + 1]?.select()
+
+    const nextInput = cardInputRefs.current[index + 1]
+    if (nextInput) {
+      nextInput.focus()
+      nextInput.select()
+      return
+    }
+
+    handleCalculate()
   }
 
   return (
     <div className="app-shell">
       <header className="hero-card">
-        <p className="eyebrow">Big 2</p>
-        <h1>Big 2</h1>
-        <p className="hero-copy hero-subtitle">鋤大D</p>
+        <p className="eyebrow">Big 2 Helper</p>
+        <h1>Big 2 Helper</h1>
+        <div className="hero-copy hero-subtitle">
+          <ruby>
+            鋤大D
+            <rt>co2 daai6 di2</rt>
+          </ruby>
+          <span className="hero-divider">/</span>
+          <ruby>
+            大老二
+            <rt>da lao er</rt>
+          </ruby>
+        </div>
       </header>
 
       <nav className="tab-bar" aria-label="Main tabs">
@@ -503,58 +521,74 @@ function App() {
             </section>
 
             <section className="card">
-              <div className="card-header">
-                <h2>Settlement settings</h2>
-                <span className="pill">Saved locally</span>
-              </div>
-              <div className="settings-grid">
-                <label>
-                  <span>Value per card</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="1"
-                    value={settings.valuePerCard}
-                    onChange={(event) => updateSetting('valuePerCard', event.target.value)}
-                  />
-                </label>
-                <label>
-                  <span>Unit label</span>
-                  <input
-                    type="text"
-                    value={settings.unitLabel}
-                    onChange={(event) => updateSetting('unitLabel', event.target.value, false)}
-                    placeholder="points"
-                  />
-                </label>
-                <label>
-                  <span>Penalty threshold</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    step="1"
-                    value={settings.penaltyThreshold}
-                    onChange={(event) => updateSetting('penaltyThreshold', event.target.value)}
-                  />
-                </label>
-                <label>
-                  <span>Penalty multiplier</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min="1"
-                    step="1"
-                    value={settings.penaltyMultiplier}
-                    onChange={(event) => updateSetting('penaltyMultiplier', event.target.value)}
-                  />
-                </label>
-              </div>
-              <p className="section-copy">
-                If a payer has cards left greater than or equal to the threshold, the multiplier
-                applies to <strong>every pairwise payment they make</strong>.
-              </p>
+              <button
+                className="settings-toggle"
+                onClick={() => setShowSettings((current) => !current)}
+                aria-expanded={showSettings}
+              >
+                <div>
+                  <h2>Settings</h2>
+                  <p className="section-copy settings-summary">
+                    {settings.valuePerCard} {settings.unitLabel || 'points'} per card, threshold{' '}
+                    {settings.penaltyThreshold}, multiplier {settings.penaltyMultiplier}
+                  </p>
+                </div>
+                <span className="settings-icon" aria-hidden="true">
+                  ⚙
+                </span>
+              </button>
+              {showSettings ? (
+                <>
+                  <div className="settings-grid">
+                    <label>
+                      <span>Value per card</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="1"
+                        value={settings.valuePerCard}
+                        onChange={(event) => updateSetting('valuePerCard', event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span>Unit label</span>
+                      <input
+                        type="text"
+                        value={settings.unitLabel}
+                        onChange={(event) => updateSetting('unitLabel', event.target.value, false)}
+                        placeholder="points"
+                      />
+                    </label>
+                    <label>
+                      <span>Penalty threshold</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        step="1"
+                        value={settings.penaltyThreshold}
+                        onChange={(event) => updateSetting('penaltyThreshold', event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span>Penalty multiplier</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="1"
+                        step="1"
+                        value={settings.penaltyMultiplier}
+                        onChange={(event) => updateSetting('penaltyMultiplier', event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <p className="section-copy">
+                    If a payer has cards left greater than or equal to the threshold, the
+                    multiplier applies to <strong>every pairwise payment they make</strong>.
+                  </p>
+                </>
+              ) : null}
             </section>
 
             <section className="action-row">

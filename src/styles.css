@@ -5,22 +5,22 @@
   font-weight: 400;
   color: #1e1b18;
   background:
-    radial-gradient(circle at top left, rgba(224, 182, 86, 0.28), transparent 34%),
-    linear-gradient(180deg, #f7f0de 0%, #efe5cf 100%);
+    radial-gradient(circle at top left, rgba(108, 162, 232, 0.26), transparent 34%),
+    linear-gradient(180deg, #eef5ff 0%, #dfeafb 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg-panel: rgba(255, 250, 242, 0.88);
-  --bg-panel-strong: #fffaf0;
-  --border: rgba(64, 47, 30, 0.14);
-  --border-strong: rgba(64, 47, 30, 0.24);
-  --text-muted: #65594d;
-  --accent: #0e6b50;
-  --accent-strong: #0a513d;
-  --accent-soft: #d7efe5;
+  --bg-panel: rgba(249, 252, 255, 0.9);
+  --bg-panel-strong: #f9fcff;
+  --border: rgba(41, 71, 119, 0.14);
+  --border-strong: rgba(41, 71, 119, 0.24);
+  --text-muted: #546478;
+  --accent: #1f5ea8;
+  --accent-strong: #15467e;
+  --accent-soft: #dbe9fb;
   --danger: #8d3032;
-  --shadow: 0 18px 44px rgba(85, 60, 20, 0.12);
+  --shadow: 0 18px 44px rgba(50, 88, 148, 0.12);
   --radius: 22px;
 }
 
@@ -31,6 +31,7 @@
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
 }
 
 button,
@@ -53,7 +54,7 @@ input {
 
 input:focus,
 button:focus {
-  outline: 3px solid rgba(14, 107, 80, 0.2);
+  outline: 3px solid rgba(31, 94, 168, 0.18);
   outline-offset: 2px;
 }
 
@@ -115,10 +116,29 @@ h2 {
 }
 
 .hero-subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.45rem;
   margin-bottom: 0;
-  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-size: clamp(1rem, 3vw, 1.2rem);
   font-weight: 700;
   color: var(--accent-strong);
+}
+
+.hero-subtitle ruby {
+  ruby-position: over;
+  font-size: 1.15em;
+}
+
+.hero-subtitle rt {
+  font-size: 0.47em;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.hero-divider {
+  color: rgba(84, 100, 120, 0.55);
 }
 
 .tab-bar {
@@ -216,8 +236,9 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.2rem;
+  gap: 0.1rem;
   margin-top: 0.35rem;
+  overflow: hidden;
 }
 
 .combo-ranking-strip {
@@ -248,9 +269,9 @@ h2 {
 
 .combo-ranking-chip.active {
   background: var(--accent-soft);
-  border-color: rgba(14, 107, 80, 0.35);
+  border-color: rgba(31, 94, 168, 0.35);
   color: var(--accent-strong);
-  box-shadow: 0 0 0 4px rgba(14, 107, 80, 0.08);
+  box-shadow: 0 0 0 4px rgba(31, 94, 168, 0.08);
 }
 
 .combo-rank-number {
@@ -260,7 +281,7 @@ h2 {
   width: 1.55rem;
   height: 1.55rem;
   border-radius: 999px;
-  background: rgba(14, 107, 80, 0.1);
+  background: rgba(31, 94, 168, 0.1);
   font-size: 0.82rem;
 }
 
@@ -281,18 +302,18 @@ h2 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 3.3rem;
-  height: 4.5rem;
-  padding: 0.38rem 0.45rem;
+  width: 2.65rem;
+  height: 3.7rem;
+  padding: 0.32rem 0.35rem;
   border: 1px solid rgba(64, 47, 30, 0.18);
   border-radius: 0.9rem;
   background: #fffdf8;
-  box-shadow: 0 10px 20px rgba(85, 60, 20, 0.1);
+  box-shadow: 0 10px 20px rgba(50, 88, 148, 0.1);
 }
 
 .summary-card-rank,
 .rank-card-rank {
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -300,35 +321,29 @@ h2 {
 .summary-card-suit,
 .rank-card-suit {
   align-self: center;
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   line-height: 1;
 }
 
 .suit-separator-card {
   padding: 0 0.1rem;
   color: #3b312b;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
 .rank-fan {
   display: flex;
   align-items: flex-end;
-  overflow-x: auto;
+  overflow: hidden;
   padding: 0.4rem 0 0.25rem;
-  margin-right: -0.25rem;
-  scrollbar-width: none;
-}
-
-.rank-fan::-webkit-scrollbar {
-  display: none;
 }
 
 .rank-card {
   flex: 0 0 auto;
-  width: 2.85rem;
-  height: 3.95rem;
-  margin-left: -1.2rem;
+  width: 2.48rem;
+  height: 3.5rem;
+  margin-left: -1.35rem;
 }
 
 .rank-card:first-child {
@@ -374,7 +389,7 @@ h2 {
 }
 
 .suit-token {
-  background: rgba(215, 239, 229, 0.75);
+  background: rgba(219, 233, 251, 0.82);
 }
 
 .combo-card,
@@ -384,10 +399,10 @@ h2 {
 }
 
 .combo-card-highlighted {
-  border-color: rgba(14, 107, 80, 0.38);
+  border-color: rgba(31, 94, 168, 0.38);
   box-shadow:
-    0 18px 44px rgba(85, 60, 20, 0.12),
-    0 0 0 4px rgba(14, 107, 80, 0.08);
+    0 18px 44px rgba(50, 88, 148, 0.12),
+    0 0 0 4px rgba(31, 94, 168, 0.08);
 }
 
 .combo-toggle,
@@ -411,7 +426,7 @@ h2 {
   width: 2.3rem;
   height: 2.3rem;
   border-radius: 999px;
-  background: rgba(215, 239, 229, 0.58);
+  background: rgba(219, 233, 251, 0.76);
 }
 
 .chevron-icon {
@@ -440,7 +455,7 @@ h2 {
 }
 
 .mini-card {
-  width: 60px;
+  width: 56px;
   max-width: 18vw;
   height: auto;
   margin-left: -0.9rem;
@@ -542,6 +557,35 @@ label span {
   gap: 0.8rem;
 }
 
+.settings-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+}
+
+.settings-summary {
+  margin-bottom: 0;
+}
+
+.settings-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
 .primary-button,
 .ghost-button {
   min-height: 52px;
@@ -586,18 +630,20 @@ label span {
 .results-card .card-header {
   align-items: flex-start;
   flex-wrap: wrap;
+  padding: 1rem 1rem 0;
 }
 
 .results-card .results-list {
   list-style: none;
   padding-left: 0;
+  margin-top: 0.5rem;
 }
 
 .settlement-item {
   list-style: none;
   display: grid;
-  gap: 0.3rem;
-  padding: 0.75rem 0;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 
@@ -615,15 +661,23 @@ label span {
 }
 
 .settlement-amount {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 0.45rem 0.9rem;
+  gap: 0.35rem 0.9rem;
+}
+
+.settlement-amount strong {
+  min-width: 0;
+}
+
+.settlement-amount span {
+  text-align: right;
+  white-space: nowrap;
 }
 
 .net-list li {
-  padding: 0.55rem 0;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 
@@ -651,14 +705,14 @@ label span {
   }
 
   .mini-card {
-    width: 68px;
+    width: 62px;
     max-width: none;
   }
 
   .rank-card {
-    width: 3rem;
-    height: 4.1rem;
-    margin-left: -1rem;
+    width: 2.8rem;
+    height: 3.8rem;
+    margin-left: -1.1rem;
   }
 }
 
