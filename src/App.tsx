@@ -52,6 +52,7 @@ function App() {
   const [errors, setErrors] = useState<string[]>([])
   const [result, setResult] = useState<CalculationResult | null>(null)
   const [copyFeedback, setCopyFeedback] = useState('')
+  const [highlightedCombo, setHighlightedCombo] = useState<string | null>(null)
   const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
@@ -311,14 +312,55 @@ function App() {
                 <h2>5-card combo ranking</h2>
                 <span className="pill">Lowest to highest</span>
               </div>
-              <p className="big-inline rank-line">{comboRanking.join(' < ')}</p>
+              <div className="combo-ranking-strip" aria-label={comboRanking.join(' less than ')}>
+                {comboDetails.map((combo, index) => {
+                  const isHighlighted = highlightedCombo === combo.id
+                  return (
+                    <div className="combo-ranking-item" key={combo.id}>
+                      <button
+                        type="button"
+                        className={isHighlighted ? 'combo-ranking-chip active' : 'combo-ranking-chip'}
+                        onMouseEnter={() => setHighlightedCombo(combo.id)}
+                        onMouseLeave={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
+                        onFocus={() => setHighlightedCombo(combo.id)}
+                        onBlur={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
+                        onClick={() => {
+                          setHighlightedCombo(combo.id)
+                          setExpandedCards((current) => ({
+                            ...current,
+                            [combo.id]: true,
+                          }))
+                          document
+                            .getElementById(`combo-card-${combo.id}`)
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                        }}
+                      >
+                        <span className="combo-rank-number">{index + 1}</span>
+                        <span>{combo.name}</span>
+                      </button>
+                      {index < comboDetails.length - 1 ? (
+                        <span className="combo-ranking-arrow" aria-hidden="true">
+                          →
+                        </span>
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
             </section>
 
             <section className="combo-grid">
               {comboDetails.map((combo) => {
                 const isOpen = expandedCards[combo.id] ?? false
+                const isHighlighted = highlightedCombo === combo.id
                 return (
-                  <article className="card combo-card" key={combo.id}>
+                  <article
+                    className={isHighlighted ? 'card combo-card combo-card-highlighted' : 'card combo-card'}
+                    id={`combo-card-${combo.id}`}
+                    key={combo.id}
+                    onMouseEnter={() => setHighlightedCombo(combo.id)}
+                    onMouseLeave={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
+                  >
                     <button
                       className="combo-toggle"
                       onClick={() =>
@@ -328,6 +370,8 @@ function App() {
                         }))
                       }
                       aria-expanded={isOpen}
+                      onFocus={() => setHighlightedCombo(combo.id)}
+                      onBlur={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
                     >
                       <div className="combo-heading">
                         <h2>{combo.name}</h2>
