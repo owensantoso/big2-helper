@@ -637,13 +637,14 @@ label span {
   list-style: none;
   padding-left: 0;
   margin-top: 0.5rem;
+  overflow: hidden;
 }
 
 .settlement-item {
   list-style: none;
   display: grid;
   gap: 0.45rem;
-  padding: 0.85rem 1rem;
+  padding: 0.95rem 1.2rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 
@@ -664,7 +665,8 @@ label span {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 0.35rem 0.9rem;
+  gap: 0.35rem 1.1rem;
+  padding-right: 0.2rem;
 }
 
 .settlement-amount strong {
@@ -677,7 +679,7 @@ label span {
 }
 
 .net-list li {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.2rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 

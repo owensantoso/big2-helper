@@ -10,10 +10,10 @@ const STORAGE_KEYS = {
 }
 
 const defaultPlayers: Player[] = [
-  { id: 'p1', name: '', cardsLeft: 0 },
-  { id: 'p2', name: '', cardsLeft: 0 },
-  { id: 'p3', name: '', cardsLeft: 0 },
-  { id: 'p4', name: '', cardsLeft: 0 },
+  { id: 'p1', name: '', cardsLeft: '' },
+  { id: 'p2', name: '', cardsLeft: '' },
+  { id: 'p3', name: '', cardsLeft: '' },
+  { id: 'p4', name: '', cardsLeft: '' },
 ]
 
 const defaultSettings: CalculatorSettings = {
@@ -103,7 +103,7 @@ function App() {
         nextPlayers.push({
           id: `p${index + 1}`,
           name: '',
-          cardsLeft: 0,
+          cardsLeft: '',
         })
       }
       return nextPlayers
@@ -496,6 +496,8 @@ function App() {
                         aria-label={`Player ${index + 1} name`}
                         value={player.name}
                         onChange={(event) => updatePlayer(player.id, 'name', event.target.value)}
+                        onFocus={(event) => event.currentTarget.select()}
+                        onClick={(event) => event.currentTarget.select()}
                         placeholder={`Player ${index + 1}`}
                       />
                     </div>
