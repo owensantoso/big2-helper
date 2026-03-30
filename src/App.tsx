@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { comboDetails, comboRanking, rankOrder, suitOrder } from './data/bigTwoRules'
 import { calculateSettlements, validatePlayers, validateSettings } from './lib/calculator'
 import type { CalculationResult, CalculatorSettings, Player, TabId } from './types'
@@ -10,10 +10,10 @@ const STORAGE_KEYS = {
 }
 
 const defaultPlayers: Player[] = [
-  { id: 'p1', name: 'Alice', cardsLeft: 0 },
-  { id: 'p2', name: 'Bob', cardsLeft: 2 },
-  { id: 'p3', name: 'Carol', cardsLeft: 5 },
-  { id: 'p4', name: 'Dave', cardsLeft: 10 },
+  { id: 'p1', name: '', cardsLeft: 0 },
+  { id: 'p2', name: '', cardsLeft: 0 },
+  { id: 'p3', name: '', cardsLeft: 0 },
+  { id: 'p4', name: '', cardsLeft: 0 },
 ]
 
 const defaultSettings: CalculatorSettings = {
@@ -37,6 +37,10 @@ function formatAmount(amount: number, unitLabel: string): string {
   return `${prefix}${amount}${unitLabel ? ` ${unitLabel}` : ''}`
 }
 
+function getPlayerLabel(name: string, index: number): string {
+  return name.trim() || `Player ${index + 1}`
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
@@ -46,6 +50,7 @@ function App() {
   const [errors, setErrors] = useState<string[]>([])
   const [result, setResult] = useState<CalculationResult | null>(null)
   const [copyFeedback, setCopyFeedback] = useState('')
+  const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
     setPlayers(readStorage<Player[]>(STORAGE_KEYS.players, defaultPlayers))
@@ -75,7 +80,7 @@ function App() {
   }, [copyFeedback])
 
   const playerNameMap = useMemo(
-    () => new Map(players.map((player) => [player.id, player.name])),
+    () => new Map(players.map((player, index) => [player.id, getPlayerLabel(player.name, index)])),
     [players],
   )
 
@@ -93,8 +98,8 @@ function App() {
       for (let index = current.length; index < nextCount; index += 1) {
         nextPlayers.push({
           id: `p${index + 1}`,
-          name: `Player ${index + 1}`,
-          cardsLeft: '',
+          name: '',
+          cardsLeft: 0,
         })
       }
       return nextPlayers
@@ -132,7 +137,16 @@ function App() {
   }
 
   const handleCalculate = () => {
-    const validationErrors = [...validatePlayers(players), ...validateSettings(settings)]
+    const normalizedPlayers = players.map((player) => ({
+      ...player,
+      cardsLeft: player.cardsLeft === '' ? 0 : player.cardsLeft,
+    }))
+
+    if (normalizedPlayers.some((player, index) => player.cardsLeft !== players[index].cardsLeft)) {
+      setPlayers(normalizedPlayers)
+    }
+
+    const validationErrors = [...validatePlayers(normalizedPlayers), ...validateSettings(settings)]
     setErrors(validationErrors)
 
     if (validationErrors.length > 0) {
@@ -140,7 +154,7 @@ function App() {
       return
     }
 
-    setResult(calculateSettlements(players, settings))
+    setResult(calculateSettlements(normalizedPlayers, settings))
   }
 
   const handleReset = () => {
@@ -178,6 +192,29 @@ function App() {
     } catch {
       setCopyFeedback('Clipboard copy failed.')
     }
+  }
+
+  const commitCardsLeft = (playerId: string) => {
+    setPlayers((current) =>
+      current.map((player) =>
+        player.id === playerId && player.cardsLeft === '' ? { ...player, cardsLeft: 0 } : player,
+      ),
+    )
+  }
+
+  const handleCardsLeftKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    playerId: string,
+    index: number,
+  ) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+
+    event.preventDefault()
+    commitCardsLeft(playerId)
+    cardInputRefs.current[index + 1]?.focus()
+    cardInputRefs.current[index + 1]?.select()
   }
 
   return (
@@ -378,11 +415,16 @@ function App() {
                     <div className="player-field">
                       <input
                         type="number"
-                        aria-label={`${player.name || `Player ${index + 1}`} cards left`}
+                        ref={(node) => {
+                          cardInputRefs.current[index] = node
+                        }}
+                        aria-label={`${getPlayerLabel(player.name, index)} cards left`}
                         inputMode="numeric"
                         min="0"
                         value={player.cardsLeft}
                         onChange={(event) => updatePlayer(player.id, 'cardsLeft', event.target.value)}
+                        onBlur={() => commitCardsLeft(player.id)}
+                        onKeyDown={(event) => handleCardsLeftKeyDown(event, player.id, index)}
                         placeholder="0"
                       />
                     </div>

@@ -14,22 +14,19 @@ export function validatePlayers(players: Player[]): string[] {
   const winnerCount = players.filter((player) => player.cardsLeft === 0).length
 
   players.forEach((player, index) => {
-    if (!player.name.trim()) {
-      errors.push(`Player ${index + 1} needs a name.`)
-    }
+    const fallbackName = player.name.trim() || `Player ${index + 1}`
 
     if (player.cardsLeft === '') {
-      errors.push(`${player.name || `Player ${index + 1}`} needs a cards-left value.`)
       return
     }
 
     if (!Number.isFinite(player.cardsLeft)) {
-      errors.push(`${player.name || `Player ${index + 1}`} has an invalid cards-left value.`)
+      errors.push(`${fallbackName} has an invalid cards-left value.`)
       return
     }
 
     if (player.cardsLeft < 0) {
-      errors.push(`${player.name || `Player ${index + 1}`} cannot have negative cards left.`)
+      errors.push(`${fallbackName} cannot have negative cards left.`)
     }
   })
 
