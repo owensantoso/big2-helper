@@ -41,6 +41,8 @@ function getPlayerLabel(name: string, index: number): string {
   return name.trim() || `Player ${index + 1}`
 }
 
+const rankPreviewSuits = ['♦', '♣', '♥', '♠']
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
@@ -248,15 +250,22 @@ function App() {
                 <h2>Suit order</h2>
                 <span className="pill">Ascending</span>
               </div>
-              <p className="big-inline suit-line" aria-label="Diamonds less than clubs less than hearts less than spades">
-                <span className="suit suit-red">♦</span>
-                <span className="suit-separator">&lt;</span>
-                <span className="suit suit-black">♣</span>
-                <span className="suit-separator">&lt;</span>
-                <span className="suit suit-red">♥</span>
-                <span className="suit-separator">&lt;</span>
-                <span className="suit suit-black">♠</span>
-              </p>
+              <div className="suit-card-row" aria-label="Diamonds less than clubs less than hearts less than spades">
+                {[
+                  { symbol: '♦', label: 'Diamonds', tone: 'red' },
+                  { symbol: '♣', label: 'Clubs', tone: 'black' },
+                  { symbol: '♥', label: 'Hearts', tone: 'red' },
+                  { symbol: '♠', label: 'Spades', tone: 'black' },
+                ].map((suit, index, collection) => (
+                  <div className="suit-order-item" key={suit.label}>
+                    <div className={suit.tone === 'red' ? 'summary-cardface suit-red' : 'summary-cardface suit-black'}>
+                      <span className="summary-card-rank">{suit.symbol}</span>
+                      <span className="summary-card-suit">{suit.symbol}</span>
+                    </div>
+                    {index < collection.length - 1 ? <span className="suit-separator-card">&lt;</span> : null}
+                  </div>
+                ))}
+              </div>
               <div className="token-row">
                 {suitOrder.map((suit) => (
                   <span
@@ -278,7 +287,23 @@ function App() {
                 <h2>Rank order</h2>
                 <span className="pill">3 low, 2 high</span>
               </div>
-              <p className="big-inline rank-line">{rankOrder.join(' < ')}</p>
+              <div className="rank-fan" aria-label={rankOrder.join(' less than ')}>
+                {rankOrder.map((rank, index) => {
+                  const suit = rankPreviewSuits[index % rankPreviewSuits.length]
+                  const isRed = suit === '♦' || suit === '♥'
+                  return (
+                    <div
+                      className={isRed ? 'rank-card rank-card-red' : 'rank-card rank-card-black'}
+                      key={rank}
+                      style={{ zIndex: index + 1 }}
+                    >
+                      <span className="rank-card-rank">{rank}</span>
+                      <span className="rank-card-suit">{suit}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="rank-helper">{rankOrder.join(' < ')}</p>
             </section>
 
             <section className="card summary-card">

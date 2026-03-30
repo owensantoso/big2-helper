@@ -212,6 +212,86 @@ h2 {
   color: #3b312b;
 }
 
+.suit-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  margin-top: 0.35rem;
+}
+
+.suit-order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.summary-cardface,
+.rank-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 3.3rem;
+  height: 4.5rem;
+  padding: 0.38rem 0.45rem;
+  border: 1px solid rgba(64, 47, 30, 0.18);
+  border-radius: 0.9rem;
+  background: #fffdf8;
+  box-shadow: 0 10px 20px rgba(85, 60, 20, 0.1);
+}
+
+.summary-card-rank,
+.rank-card-rank {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.summary-card-suit,
+.rank-card-suit {
+  align-self: center;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.suit-separator-card {
+  padding: 0 0.1rem;
+  color: #3b312b;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.rank-fan {
+  display: flex;
+  align-items: flex-end;
+  overflow-x: auto;
+  padding: 0.4rem 0 0.25rem;
+  margin-right: -0.25rem;
+  scrollbar-width: none;
+}
+
+.rank-fan::-webkit-scrollbar {
+  display: none;
+}
+
+.rank-card {
+  flex: 0 0 auto;
+  width: 2.85rem;
+  height: 3.95rem;
+  margin-left: -1.2rem;
+}
+
+.rank-card:first-child {
+  margin-left: 0;
+}
+
+.rank-helper {
+  margin: 0.55rem 0 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
 .card-header,
 .combo-toggle,
 .section-toggle,
@@ -517,6 +597,12 @@ label span {
   .mini-card {
     width: 68px;
     max-width: none;
+  }
+
+  .rank-card {
+    width: 3rem;
+    height: 4.1rem;
+    margin-left: -1rem;
   }
 }
 
