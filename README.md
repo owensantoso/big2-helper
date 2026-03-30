@@ -64,6 +64,10 @@ The Vite config uses `base: './'` so the build works well as a static site, incl
 - copy-to-clipboard results button
 - localStorage persistence for recent players, settings, and last tab
 
+## Asset note
+
+The combo example card images in `public/cards/` are free SVG playing card assets sourced from Wikimedia Commons public-domain files.
+
 ## Ruleset assumptions
 
 This app documents one explicit Big Two ruleset. House rules vary by region, so these assumptions are intentionally spelled out in the UI and code:

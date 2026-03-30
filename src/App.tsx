@@ -183,11 +183,9 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero-card">
-        <p className="eyebrow">Big Two Helper</p>
-        <h1>Learn the core rankings fast and settle a round in seconds.</h1>
-        <p className="hero-copy">
-          Mobile-first reference for one clear Big Two ruleset, with pairwise end-of-round payouts.
-        </p>
+        <p className="eyebrow">Big 2</p>
+        <h1>Big 2</h1>
+        <p className="hero-copy hero-subtitle">鋤大D</p>
       </header>
 
       <nav className="tab-bar" aria-label="Main tabs">
@@ -213,10 +211,25 @@ function App() {
                 <h2>Suit order</h2>
                 <span className="pill">Ascending</span>
               </div>
-              <p className="big-inline">♦ &lt; ♣ &lt; ♥ &lt; ♠</p>
+              <p className="big-inline suit-line" aria-label="Diamonds less than clubs less than hearts less than spades">
+                <span className="suit suit-red">♦</span>
+                <span className="suit-separator">&lt;</span>
+                <span className="suit suit-black">♣</span>
+                <span className="suit-separator">&lt;</span>
+                <span className="suit suit-red">♥</span>
+                <span className="suit-separator">&lt;</span>
+                <span className="suit suit-black">♠</span>
+              </p>
               <div className="token-row">
                 {suitOrder.map((suit) => (
-                  <span className="token" key={suit}>
+                  <span
+                    className={
+                      suit.includes('Diamonds') || suit.includes('Hearts')
+                        ? 'token suit-token suit-token-red'
+                        : 'token suit-token suit-token-black'
+                    }
+                    key={suit}
+                  >
                     {suit}
                   </span>
                 ))}
@@ -254,12 +267,29 @@ function App() {
                       }
                       aria-expanded={isOpen}
                     >
-                      <div>
+                      <div className="combo-heading">
                         <h2>{combo.name}</h2>
                         <p>{combo.summary}</p>
                       </div>
-                      <span className="pill">{isOpen ? 'Hide' : 'Tap to expand'}</span>
+                      <span className="chevron" aria-hidden="true">
+                        <span className={isOpen ? 'chevron-icon open' : 'chevron-icon'} />
+                      </span>
                     </button>
+
+                    <div className="combo-preview">
+                      <div className="hand-strip" aria-label={`${combo.name} example hand`}>
+                        {combo.exampleCards.map((cardCode) => (
+                          <img
+                            key={cardCode}
+                            className="mini-card"
+                            src={`./cards/${cardCode}.svg`}
+                            alt={cardCode}
+                            loading="lazy"
+                          />
+                        ))}
+                      </div>
+                      <p className="preview-caption">Example hand: {combo.validExample}</p>
+                    </div>
 
                     {isOpen ? (
                       <div className="combo-body">
@@ -329,29 +359,33 @@ function App() {
               <p className="section-copy">
                 The winner is the one player with <strong>0 cards left</strong>.
               </p>
+              <div className="player-columns" aria-hidden="true">
+                <span>Name</span>
+                <span>Cards left</span>
+              </div>
               <div className="player-list">
                 {players.map((player, index) => (
                   <div className="player-row" key={player.id}>
-                    <label>
-                      <span>Name</span>
+                    <div className="player-field">
                       <input
                         type="text"
+                        aria-label={`Player ${index + 1} name`}
                         value={player.name}
                         onChange={(event) => updatePlayer(player.id, 'name', event.target.value)}
                         placeholder={`Player ${index + 1}`}
                       />
-                    </label>
-                    <label>
-                      <span>Cards left</span>
+                    </div>
+                    <div className="player-field">
                       <input
                         type="number"
+                        aria-label={`${player.name || `Player ${index + 1}`} cards left`}
                         inputMode="numeric"
                         min="0"
                         value={player.cardsLeft}
                         onChange={(event) => updatePlayer(player.id, 'cardsLeft', event.target.value)}
                         placeholder="0"
                       />
-                    </label>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -444,12 +478,26 @@ function App() {
                       const from = playerNameMap.get(payment.fromPlayerId) ?? payment.fromPlayerId
                       const to = playerNameMap.get(payment.toPlayerId) ?? payment.toPlayerId
                       return (
-                        <li key={`${payment.fromPlayerId}-${payment.toPlayerId}-${index}`}>
-                          <strong>{from}</strong> owes <strong>{to}</strong> {payment.amount}
-                          {settings.unitLabel ? ` ${settings.unitLabel}` : ''}
-                          {payment.multiplierApplied > 1
-                            ? ` (${payment.cardDifference} × ${settings.valuePerCard} × ${payment.multiplierApplied})`
-                            : ` (${payment.cardDifference} × ${settings.valuePerCard})`}
+                        <li
+                          className="settlement-item"
+                          key={`${payment.fromPlayerId}-${payment.toPlayerId}-${index}`}
+                        >
+                          <div className="settlement-main">
+                            <strong>{from}</strong>
+                            <span>owes</span>
+                            <strong>{to}</strong>
+                          </div>
+                          <div className="settlement-amount">
+                            <strong>
+                              {payment.amount}
+                              {settings.unitLabel ? ` ${settings.unitLabel}` : ''}
+                            </strong>
+                            <span>
+                              {payment.multiplierApplied > 1
+                                ? `${payment.cardDifference} × ${settings.valuePerCard} × ${payment.multiplierApplied}`
+                                : `${payment.cardDifference} × ${settings.valuePerCard}`}
+                            </span>
+                          </div>
                         </li>
                       )
                     })}

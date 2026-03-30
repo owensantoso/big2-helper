@@ -19,6 +19,7 @@ export type ComboInfo = {
   tieBreak: string
   beats: string
   detail: string
+  exampleCards: string[]
 }
 
 // This app documents one explicit Big Two ruleset for teaching purposes.
@@ -33,6 +34,7 @@ export const comboDetails: ComboInfo[] = [
     invalidExample: '10♦ J♣ Q♥ K♠ 2♦',
     tieBreak: 'Highest card wins; if tied, use the suit of that highest card.',
     beats: 'A higher straight, plus any flush, full house, four of a kind, or straight flush.',
+    exampleCards: ['4D', '5C', '6H', '7S', '8D'],
   },
   {
     id: 'flush',
@@ -43,6 +45,7 @@ export const comboDetails: ComboInfo[] = [
     invalidExample: '4♥ 7♥ 9♥ Q♦ A♥',
     tieBreak: 'Higher suit wins first; if same suit, compare highest card.',
     beats: 'Any straight, or a lower flush. It loses to full house, four of a kind, and straight flush.',
+    exampleCards: ['3S', '6S', '8S', 'JS', 'AS'],
   },
   {
     id: 'full-house',
@@ -53,6 +56,7 @@ export const comboDetails: ComboInfo[] = [
     invalidExample: '5♦ 5♣ 8♥ 8♠ A♦',
     tieBreak: 'Compare the triple rank only.',
     beats: 'Any straight or flush, and a lower full house. It loses to four of a kind and straight flush.',
+    exampleCards: ['9D', '9C', '9S', 'KH', 'KC'],
   },
   {
     id: 'four-of-a-kind',
@@ -63,6 +67,7 @@ export const comboDetails: ComboInfo[] = [
     invalidExample: 'J♦ J♣ J♥ 7♠ 7♦',
     tieBreak: 'Compare the rank of the four matching cards.',
     beats: 'Any straight, flush, full house, or lower four of a kind. It only loses to straight flush.',
+    exampleCards: ['QD', 'QC', 'QH', 'QS', '3D'],
   },
   {
     id: 'straight-flush',
@@ -73,5 +78,6 @@ export const comboDetails: ComboInfo[] = [
     invalidExample: '6♣ 7♣ 8♣ 9♣ J♣',
     tieBreak: 'Highest card wins; if tied, compare the suit of that highest card.',
     beats: 'Everything below it.',
+    exampleCards: ['5H', '6H', '7H', '8H', '9H'],
   },
 ]
