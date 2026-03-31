@@ -392,13 +392,41 @@ h2 {
   font-size: 0.92rem;
 }
 
-.hand-checker-grid {
+.hand-checker-deck {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(13, minmax(0, 1fr));
-  grid-auto-flow: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
   margin-top: 1rem;
+}
+
+.hand-checker-suit-group {
+  min-width: 0;
+}
+
+.hand-checker-suit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(219, 233, 251, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.hand-checker-suit-badge-red {
+  color: #b63a3a;
+}
+
+.hand-checker-suit-badge-black {
+  color: #221d1a;
+}
+
+.hand-checker-stack {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.35rem;
 }
 
 .checker-card {
@@ -407,8 +435,9 @@ h2 {
   justify-items: start;
   align-content: space-between;
   min-width: 0;
-  aspect-ratio: 0.72;
-  padding: 0.38rem 0.34rem;
+  width: 100%;
+  aspect-ratio: 0.68;
+  padding: 0.34rem 0.32rem;
   border: 1px solid rgba(41, 71, 119, 0.16);
   border-radius: 0.8rem;
   background: #fffdf8;
@@ -420,9 +449,14 @@ h2 {
     background-color 150ms ease;
 }
 
+.hand-checker-stack .checker-card + .checker-card {
+  margin-top: -2.9rem;
+}
+
 .checker-card:hover {
   transform: translateY(-1px);
   border-color: rgba(31, 94, 168, 0.28);
+  z-index: 2;
 }
 
 .checker-card-selected {
@@ -434,14 +468,26 @@ h2 {
 }
 
 .checker-card-rank {
+  position: absolute;
+  top: 0.36rem;
+  left: 0.36rem;
   font-size: 0.9rem;
   font-weight: 900;
   line-height: 1;
 }
 
+.checker-card-corner-suit {
+  position: absolute;
+  top: 0.34rem;
+  right: 0.36rem;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
 .checker-card-suit {
+  align-self: center;
   justify-self: center;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   line-height: 1;
 }
 
@@ -513,13 +559,20 @@ h2 {
 }
 
 .rank-card-plain {
-  justify-content: center;
-  align-items: center;
-  padding: 0;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0.4rem 0.45rem;
 }
 
 .rank-card:first-child {
   margin-left: 0;
+}
+
+.rank-card .rank-card-rank {
+  position: absolute;
+  top: 0.36rem;
+  left: 0.45rem;
+  font-size: 0.88rem;
 }
 
 .rank-helper {
@@ -549,6 +602,12 @@ h2 {
   margin-top: 1rem;
 }
 
+.suit-token-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
 .token,
 .pill {
   display: inline-flex;
@@ -564,6 +623,9 @@ h2 {
 
 .suit-token {
   background: rgba(219, 233, 251, 0.82);
+  min-width: 0;
+  padding: 0.32rem 0.38rem;
+  font-size: 0.72rem;
 }
 
 .combo-card,
@@ -1015,10 +1077,50 @@ label span {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .hand-checker-grid {
-    grid-template-columns: repeat(13, minmax(0, 1fr));
-    grid-template-rows: repeat(4, minmax(0, 1fr));
-    grid-auto-flow: row;
+  .suit-token-row {
+    display: flex;
+  }
+
+  .suit-token {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.83rem;
+  }
+
+  .hand-checker-deck {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .hand-checker-suit-group {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.7rem;
+  }
+
+  .hand-checker-suit-badge {
+    align-self: start;
+    margin-bottom: 0;
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .hand-checker-stack {
+    flex-direction: row;
+    align-items: flex-start;
+    min-width: 0;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .hand-checker-stack .checker-card {
+    width: 3rem;
+    aspect-ratio: 0.7;
+  }
+
+  .hand-checker-stack .checker-card + .checker-card {
+    margin-top: 0;
+    margin-left: -1.05rem;
   }
 
   .settings-grid {

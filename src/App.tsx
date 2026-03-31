@@ -496,7 +496,7 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div className="token-row">
+                <div className="token-row suit-token-row">
                   {suitOrder.map((suit) => (
                     <span
                       className={
@@ -702,39 +702,48 @@ function App() {
                     <strong>{handCheckResult.message}</strong>
                     <span>{selectedHandCards.length}/5 selected</span>
                   </div>
-                  <div className="hand-checker-suits" aria-hidden="true">
-                    {handCheckerSuits.map((suit) => (
-                      <span
-                        className={suit.tone === 'red' ? 'token suit-token suit-token-red' : 'token suit-token suit-token-black'}
-                        key={suit.symbol}
-                      >
-                        {suit.symbol} {suit.label}
-                      </span>
-                    ))}
-                  </div>
                   <p className="hand-checker-helper">
-                    Suit order runs left to right on mobile, and top to bottom on wider screens.
+                    Suits stay grouped together, with the rank order running from 3 down to 2.
                   </p>
-                  <div className="hand-checker-grid">
-                    {deckCards.map((card) => {
-                      const isSelected = selectedHandCards.includes(card.id)
-                      return (
-                        <button
-                          type="button"
-                          key={card.id}
+                  <div className="hand-checker-deck">
+                    {handCheckerSuits.map((suit) => (
+                      <section className="hand-checker-suit-group" key={suit.symbol}>
+                        <div
                           className={
-                            isSelected
-                              ? `checker-card checker-card-selected checker-card-${card.tone}`
-                              : `checker-card checker-card-${card.tone}`
+                            suit.tone === 'red'
+                              ? 'hand-checker-suit-badge hand-checker-suit-badge-red'
+                              : 'hand-checker-suit-badge hand-checker-suit-badge-black'
                           }
-                          onClick={() => toggleHandCard(card.id)}
-                          aria-pressed={isSelected}
                         >
-                          <span className="checker-card-rank">{card.rank}</span>
-                          <span className="checker-card-suit">{card.suit}</span>
-                        </button>
-                      )
-                    })}
+                          <span>{suit.symbol}</span>
+                          <span>{suit.label}</span>
+                        </div>
+                        <div className="hand-checker-stack">
+                          {rankOrder.map((rank) => {
+                            const cardId = `${rank}${suit.symbol}`
+                            const isSelected = selectedHandCards.includes(cardId)
+
+                            return (
+                              <button
+                                type="button"
+                                key={cardId}
+                                className={
+                                  isSelected
+                                    ? `checker-card checker-card-selected checker-card-${suit.tone}`
+                                    : `checker-card checker-card-${suit.tone}`
+                                }
+                                onClick={() => toggleHandCard(cardId)}
+                                aria-pressed={isSelected}
+                              >
+                                <span className="checker-card-rank">{rank}</span>
+                                <span className="checker-card-corner-suit">{suit.symbol}</span>
+                                <span className="checker-card-suit">{suit.symbol}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </section>
+                    ))}
                   </div>
                 </>
               ) : null}
