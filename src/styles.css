@@ -185,6 +185,7 @@ h2 {
 
 .content-stack,
 .combo-grid,
+.summary-grid,
 .results-grid,
 .player-list,
 .settings-grid {
@@ -824,6 +825,11 @@ label span {
   .combo-grid,
   .results-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
   }
 
   .settings-grid {

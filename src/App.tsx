@@ -344,56 +344,58 @@ function App() {
       <main className="content-stack">
         {activeTab === 'cheat-sheet' ? (
           <>
-            <section className="card summary-card">
-              <div className="card-header">
-                <h2>Suit order</h2>
-                <span className="pill">Ascending</span>
-              </div>
-              <div className="suit-card-row" aria-label="Diamonds less than clubs less than hearts less than spades">
-                {[
-                  { symbol: '♦', label: 'Diamonds', tone: 'red' },
-                  { symbol: '♣', label: 'Clubs', tone: 'black' },
-                  { symbol: '♥', label: 'Hearts', tone: 'red' },
-                  { symbol: '♠', label: 'Spades', tone: 'black' },
-                ].map((suit, index, collection) => (
-                  <div className="suit-order-item" key={suit.label}>
-                    <div className={suit.tone === 'red' ? 'summary-cardface suit-red' : 'summary-cardface suit-black'}>
-                      <span className="summary-card-rank">{suit.symbol}</span>
-                      <span className="summary-card-suit">{suit.symbol}</span>
+            <section className="summary-grid">
+              <section className="card summary-card">
+                <div className="card-header">
+                  <h2>Suit order</h2>
+                  <span className="pill">Ascending</span>
+                </div>
+                <div className="suit-card-row" aria-label="Diamonds less than clubs less than hearts less than spades">
+                  {[
+                    { symbol: '♦', label: 'Diamonds', tone: 'red' },
+                    { symbol: '♣', label: 'Clubs', tone: 'black' },
+                    { symbol: '♥', label: 'Hearts', tone: 'red' },
+                    { symbol: '♠', label: 'Spades', tone: 'black' },
+                  ].map((suit, index, collection) => (
+                    <div className="suit-order-item" key={suit.label}>
+                      <div className={suit.tone === 'red' ? 'summary-cardface suit-red' : 'summary-cardface suit-black'}>
+                        <span className="summary-card-rank">{suit.symbol}</span>
+                        <span className="summary-card-suit">{suit.symbol}</span>
+                      </div>
+                      {index < collection.length - 1 ? <span className="suit-separator-card">&lt;</span> : null}
                     </div>
-                    {index < collection.length - 1 ? <span className="suit-separator-card">&lt;</span> : null}
-                  </div>
-                ))}
-              </div>
-              <div className="token-row">
-                {suitOrder.map((suit) => (
-                  <span
-                    className={
-                      suit.includes('Diamonds') || suit.includes('Hearts')
-                        ? 'token suit-token suit-token-red'
-                        : 'token suit-token suit-token-black'
-                    }
-                    key={suit}
-                  >
-                    {suit}
-                  </span>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+                <div className="token-row">
+                  {suitOrder.map((suit) => (
+                    <span
+                      className={
+                        suit.includes('Diamonds') || suit.includes('Hearts')
+                          ? 'token suit-token suit-token-red'
+                          : 'token suit-token suit-token-black'
+                      }
+                      key={suit}
+                    >
+                      {suit}
+                    </span>
+                  ))}
+                </div>
+              </section>
 
-            <section className="card summary-card">
-              <div className="card-header">
-                <h2>Rank order</h2>
-                <span className="pill">3 low, 2 high</span>
-              </div>
-              <div className="rank-fan" aria-label={rankOrder.join(' less than ')}>
-                {rankOrder.map((rank, index) => (
-                  <div className="rank-card rank-card-plain" key={rank} style={{ zIndex: index + 1 }}>
-                      <span className="rank-card-rank">{rank}</span>
-                    </div>
-                ))}
-              </div>
-              <p className="rank-helper">{rankOrder.join(' < ')}</p>
+              <section className="card summary-card">
+                <div className="card-header">
+                  <h2>Rank order</h2>
+                  <span className="pill">3 low, 2 high</span>
+                </div>
+                <div className="rank-fan" aria-label={rankOrder.join(' less than ')}>
+                  {rankOrder.map((rank, index) => (
+                    <div className="rank-card rank-card-plain" key={rank} style={{ zIndex: index + 1 }}>
+                        <span className="rank-card-rank">{rank}</span>
+                      </div>
+                  ))}
+                </div>
+                <p className="rank-helper">{rankOrder.join(' < ')}</p>
+              </section>
             </section>
 
             <section className="card summary-card">
