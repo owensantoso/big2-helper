@@ -925,8 +925,8 @@ label span {
 
 .results-card .results-list {
   list-style: none;
-  padding-left: 0;
-  margin-top: 0.5rem;
+  padding: 0.35rem 1rem 1rem;
+  margin-top: 0;
   overflow: hidden;
 }
 
@@ -934,7 +934,7 @@ label span {
   list-style: none;
   display: grid;
   gap: 0.55rem;
-  padding: 1rem 1.35rem;
+  padding: 1rem 0.25rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 
@@ -956,7 +956,7 @@ label span {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 0.45rem 1.3rem;
-  padding-right: 0.45rem;
+  padding-right: 0.2rem;
 }
 
 .settlement-amount strong {
@@ -969,7 +969,7 @@ label span {
 }
 
 .net-list li {
-  padding: 0.85rem 1.2rem;
+  padding: 0.85rem 0.25rem;
   border-bottom: 1px solid rgba(64, 47, 30, 0.08);
 }
 
