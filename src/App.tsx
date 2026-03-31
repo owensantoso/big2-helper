@@ -222,12 +222,10 @@ function App() {
 
   useEffect(() => {
     if (handCheckResult.comboId) {
-      setHighlightedCombo(handCheckResult.comboId)
       setExpandedCards({ [handCheckResult.comboId]: true })
       return
     }
 
-    setHighlightedCombo(null)
     setExpandedCards({})
   }, [handCheckResult])
 
@@ -561,11 +559,18 @@ function App() {
               <div className="combo-ranking-strip" aria-label={comboRanking.join(' less than ')}>
                 {comboDetails.map((combo, index) => {
                   const isHighlighted = highlightedCombo === combo.id
+                  const isDetected = handCheckResult.comboId === combo.id
                   return (
                     <div className="combo-ranking-item" key={combo.id}>
                       <button
                         type="button"
-                        className={isHighlighted ? 'combo-ranking-chip active' : 'combo-ranking-chip'}
+                        className={
+                          isDetected
+                            ? 'combo-ranking-chip detected'
+                            : isHighlighted
+                              ? 'combo-ranking-chip active'
+                              : 'combo-ranking-chip'
+                        }
                         onMouseEnter={() => setHighlightedCombo(combo.id)}
                         onMouseLeave={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
                         onFocus={() => setHighlightedCombo(combo.id)}
@@ -601,9 +606,16 @@ function App() {
               {comboDetails.map((combo) => {
                 const isOpen = expandedCards[combo.id] ?? false
                 const isHighlighted = highlightedCombo === combo.id
+                const isDetected = handCheckResult.comboId === combo.id
                 return (
                   <article
-                    className={isHighlighted ? 'card combo-card combo-card-highlighted' : 'card combo-card'}
+                    className={
+                      isDetected
+                        ? 'card combo-card combo-card-detected'
+                        : isHighlighted
+                          ? 'card combo-card combo-card-highlighted'
+                          : 'card combo-card'
+                    }
                     id={`combo-card-${combo.id}`}
                     key={combo.id}
                     onMouseEnter={() => setHighlightedCombo(combo.id)}
@@ -729,7 +741,7 @@ function App() {
                                 key={cardId}
                                 className={
                                   isSelected
-                                    ? `checker-card checker-card-selected checker-card-${suit.tone}`
+                                    ? `checker-card checker-card-selected-hand checker-card-${suit.tone}`
                                     : `checker-card checker-card-${suit.tone}`
                                 }
                                 onClick={() => toggleHandCard(cardId)}

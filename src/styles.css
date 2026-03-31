@@ -19,6 +19,9 @@
   --accent: #1f5ea8;
   --accent-strong: #15467e;
   --accent-soft: #dbe9fb;
+  --gold: #bf8a10;
+  --gold-strong: #8f6700;
+  --gold-soft: #f8e7b1;
   --danger: #8d3032;
   --shadow: 0 18px 44px rgba(50, 88, 148, 0.12);
   --radius: 22px;
@@ -288,6 +291,13 @@ h2 {
   box-shadow: 0 0 0 4px rgba(31, 94, 168, 0.08);
 }
 
+.combo-ranking-chip.detected {
+  background: var(--gold-soft);
+  border-color: rgba(191, 138, 16, 0.42);
+  color: var(--gold-strong);
+  box-shadow: 0 0 0 4px rgba(191, 138, 16, 0.12);
+}
+
 .combo-rank-number {
   display: inline-flex;
   align-items: center;
@@ -458,12 +468,12 @@ h2 {
   border-color: rgba(31, 94, 168, 0.28);
 }
 
-.checker-card-selected {
-  border-color: rgba(31, 94, 168, 0.4);
-  background: linear-gradient(180deg, rgba(219, 233, 251, 0.95), rgba(255, 255, 255, 0.98));
+.checker-card-selected-hand {
+  border-color: rgba(191, 138, 16, 0.48);
+  background: linear-gradient(180deg, rgba(248, 231, 177, 0.98), rgba(255, 252, 240, 0.98));
   box-shadow:
-    0 12px 22px rgba(50, 88, 148, 0.14),
-    0 0 0 3px rgba(31, 94, 168, 0.12);
+    0 12px 22px rgba(143, 103, 0, 0.14),
+    0 0 0 3px rgba(191, 138, 16, 0.14);
 }
 
 .checker-card-rank {
@@ -634,6 +644,15 @@ h2 {
   box-shadow:
     0 18px 44px rgba(50, 88, 148, 0.16),
     0 0 0 8px rgba(31, 94, 168, 0.18);
+}
+
+.combo-card-detected {
+  border-color: rgba(191, 138, 16, 0.45);
+  background:
+    linear-gradient(180deg, rgba(248, 231, 177, 0.74) 0%, rgba(255, 252, 240, 0.98) 34%);
+  box-shadow:
+    0 18px 44px rgba(143, 103, 0, 0.14),
+    0 0 0 8px rgba(191, 138, 16, 0.16);
 }
 
 .combo-toggle,
