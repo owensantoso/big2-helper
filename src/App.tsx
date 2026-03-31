@@ -64,6 +64,78 @@ function getResultPlayerNameById(players: Player[], playerId: string): string {
   return getPlayerLabel(players[index].name, index)
 }
 
+const handCheckerSuits = [
+  { symbol: '♦', tone: 'red' as const, label: 'Diamonds' },
+  { symbol: '♣', tone: 'black' as const, label: 'Clubs' },
+  { symbol: '♥', tone: 'red' as const, label: 'Hearts' },
+  { symbol: '♠', tone: 'black' as const, label: 'Spades' },
+]
+
+const deckCards = handCheckerSuits.flatMap((suit) =>
+  rankOrder.map((rank) => ({
+    id: `${rank}${suit.symbol}`,
+    rank,
+    suit: suit.symbol,
+    tone: suit.tone,
+  })),
+)
+
+function classifySelectedHand(selectedIds: string[]): string {
+  if (selectedIds.length !== 5) {
+    return `Select 5 cards to check. (${selectedIds.length}/5 selected)`
+  }
+
+  const cards = selectedIds.map((id) => {
+    const rank = id.slice(0, -1)
+    const suit = id.slice(-1)
+    return { rank, suit }
+  })
+
+  const ranks = cards.map((card) => card.rank)
+  const suits = cards.map((card) => card.suit)
+  const uniqueRanks = new Set(ranks)
+  const isFlush = new Set(suits).size === 1
+  const rankCounts = Array.from(
+    ranks.reduce((counts, rank) => {
+      counts.set(rank, (counts.get(rank) ?? 0) + 1)
+      return counts
+    }, new Map<string, number>()).values(),
+  ).sort((first, second) => second - first)
+
+  const sortedRankIndexes = Array.from(uniqueRanks)
+    .map((rank) => rankOrder.indexOf(rank))
+    .sort((first, second) => first - second)
+
+  const isStraight =
+    uniqueRanks.size === 5 &&
+    !ranks.includes('2') &&
+    sortedRankIndexes.every((rankIndex, index, collection) =>
+      index === 0 ? true : rankIndex - collection[index - 1] === 1,
+    )
+
+  if (isStraight && isFlush) {
+    return 'Straight Flush'
+  }
+
+  if (rankCounts[0] === 4) {
+    return 'Four of a Kind'
+  }
+
+  if (rankCounts[0] === 3 && rankCounts[1] === 2) {
+    return 'Full House'
+  }
+
+  if (isFlush) {
+    return 'Flush'
+  }
+
+  if (isStraight) {
+    return 'Straight'
+  }
+
+  return 'Not a valid 5-card hand in this ruleset.'
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
@@ -78,6 +150,7 @@ function App() {
   const [savedRounds, setSavedRounds] = useState<SavedRound[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [saveFeedback, setSaveFeedback] = useState('')
+  const [selectedHandCards, setSelectedHandCards] = useState<string[]>([])
   const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
@@ -133,6 +206,11 @@ function App() {
       .map(([name, total]) => ({ name, total }))
       .sort((first, second) => second.total - first.total)
   }, [savedRounds])
+
+  const handCheckResult = useMemo(
+    () => classifySelectedHand(selectedHandCards),
+    [selectedHandCards],
+  )
 
   const handlePlayerCountChange = (nextCount: number) => {
     setPlayers((current) => {
@@ -293,6 +371,20 @@ function App() {
     setSavedRounds((current) => current.filter((round) => round.id !== roundId))
   }
 
+  const toggleHandCard = (cardId: string) => {
+    setSelectedHandCards((current) => {
+      if (current.includes(cardId)) {
+        return current.filter((selectedId) => selectedId !== cardId)
+      }
+
+      if (current.length >= 5) {
+        return current
+      }
+
+      return [...current, cardId]
+    })
+  }
+
   const commitCardsLeft = (playerId: string) => {
     setPlayers((current) =>
       current.map((player) =>
@@ -415,6 +507,33 @@ function App() {
 
             <section className="card summary-card">
               <div className="card-header">
+                <h2>Valid plays</h2>
+                <span className="pill">Quick guide</span>
+              </div>
+              <div className="valid-plays-grid">
+                <article className="valid-play-card">
+                  <h3>Singles</h3>
+                  <p>Play 1 card.</p>
+                  <p className="valid-play-example">Example: A♠</p>
+                </article>
+                <article className="valid-play-card">
+                  <h3>Doubles</h3>
+                  <p>Play 2 cards of the same rank.</p>
+                  <p className="valid-play-example">Example: 9♦ 9♣</p>
+                </article>
+                <article className="valid-play-card">
+                  <h3>Triples</h3>
+                  <p>Play 3 cards of the same rank.</p>
+                  <p className="valid-play-example">Example: Q♦ Q♣ Q♥</p>
+                </article>
+              </div>
+              <p className="invalid-play-note">
+                Unlike poker, <strong>two pair is not a valid play</strong> in this helper&apos;s ruleset.
+              </p>
+            </section>
+
+            <section className="card summary-card">
+              <div className="card-header">
                 <h2>5-card combo ranking</h2>
                 <span className="pill">Lowest to highest</span>
               </div>
@@ -459,29 +578,59 @@ function App() {
 
             <section className="card summary-card">
               <div className="card-header">
-                <h2>Valid plays</h2>
-                <span className="pill">Quick guide</span>
+                <h2>Is this a hand?</h2>
+                <span className="pill">Pick 5 cards</span>
               </div>
-              <div className="valid-plays-grid">
-                <article className="valid-play-card">
-                  <h3>Singles</h3>
-                  <p>Play 1 card.</p>
-                  <p className="valid-play-example">Example: A♠</p>
-                </article>
-                <article className="valid-play-card">
-                  <h3>Doubles</h3>
-                  <p>Play 2 cards of the same rank.</p>
-                  <p className="valid-play-example">Example: 9♦ 9♣</p>
-                </article>
-                <article className="valid-play-card">
-                  <h3>Triples</h3>
-                  <p>Play 3 cards of the same rank.</p>
-                  <p className="valid-play-example">Example: Q♦ Q♣ Q♥</p>
-                </article>
+              <div className="hand-checker-header">
+                <p className="section-copy hand-checker-copy">
+                  Select exactly 5 cards. The result updates immediately when you hit 5.
+                </p>
+                <button
+                  className="pill-button"
+                  onClick={() => setSelectedHandCards([])}
+                  disabled={selectedHandCards.length === 0}
+                >
+                  Clear
+                </button>
               </div>
-              <p className="invalid-play-note">
-                Unlike poker, <strong>two pair is not a valid play</strong> in this helper&apos;s ruleset.
+              <div className="hand-checker-result">
+                <strong>{handCheckResult}</strong>
+                <span>{selectedHandCards.length}/5 selected</span>
+              </div>
+              <div className="hand-checker-suits" aria-hidden="true">
+                {handCheckerSuits.map((suit) => (
+                  <span
+                    className={suit.tone === 'red' ? 'token suit-token suit-token-red' : 'token suit-token suit-token-black'}
+                    key={suit.symbol}
+                  >
+                    {suit.symbol} {suit.label}
+                  </span>
+                ))}
+              </div>
+              <p className="hand-checker-helper">
+                Suit order runs left to right on mobile, and top to bottom on wider screens.
               </p>
+              <div className="hand-checker-grid">
+                {deckCards.map((card) => {
+                  const isSelected = selectedHandCards.includes(card.id)
+                  return (
+                    <button
+                      type="button"
+                      key={card.id}
+                      className={
+                        isSelected
+                          ? `checker-card checker-card-selected checker-card-${card.tone}`
+                          : `checker-card checker-card-${card.tone}`
+                      }
+                      onClick={() => toggleHandCard(card.id)}
+                      aria-pressed={isSelected}
+                    >
+                      <span className="checker-card-rank">{card.rank}</span>
+                      <span className="checker-card-suit">{card.suit}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </section>
 
             <section className="combo-grid">
