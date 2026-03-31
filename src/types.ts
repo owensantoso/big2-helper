@@ -30,3 +30,24 @@ export type CalculationResult = {
   pairwisePayments: PairwisePayment[]
   netResults: NetResult[]
 }
+
+export type SavedRoundPlayer = {
+  name: string
+  cardsLeft: number
+  netAmount: number
+}
+
+export type SavedRound = {
+  id: string
+  savedAt: string
+  unitLabel: string
+  valuePerCard: number
+  penaltyThreshold: number
+  penaltyMultiplier: number
+  players: SavedRoundPlayer[]
+}
+
+export type RunningTotal = {
+  name: string
+  total: number
+}

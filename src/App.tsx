@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { comboDetails, comboRanking, rankOrder, suitOrder } from './data/bigTwoRules'
 import { calculateSettlements, validatePlayers, validateSettings } from './lib/calculator'
-import type { CalculationResult, CalculatorSettings, Player, TabId } from './types'
+import type {
+  CalculationResult,
+  CalculatorSettings,
+  Player,
+  RunningTotal,
+  SavedRound,
+  TabId,
+} from './types'
 
 const STORAGE_KEYS = {
   players: 'big2-helper:players',
   settings: 'big2-helper:settings',
   activeTab: 'big2-helper:active-tab',
+  savedRounds: 'big2-helper:saved-rounds',
 }
 
 const defaultPlayers: Player[] = [
@@ -41,6 +49,14 @@ function getPlayerLabel(name: string, index: number): string {
   return name.trim() || `Player ${index + 1}`
 }
 
+function getResultPlayerNameById(players: Player[], playerId: string): string {
+  const index = players.findIndex((player) => player.id === playerId)
+  if (index === -1) {
+    return playerId
+  }
+  return getPlayerLabel(players[index].name, index)
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
@@ -52,12 +68,16 @@ function App() {
   const [copyFeedback, setCopyFeedback] = useState('')
   const [highlightedCombo, setHighlightedCombo] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [savedRounds, setSavedRounds] = useState<SavedRound[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [saveFeedback, setSaveFeedback] = useState('')
   const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
     setPlayers(readStorage<Player[]>(STORAGE_KEYS.players, defaultPlayers))
     setSettings(readStorage<CalculatorSettings>(STORAGE_KEYS.settings, defaultSettings))
     setActiveTab(readStorage<TabId>(STORAGE_KEYS.activeTab, 'cheat-sheet'))
+    setSavedRounds(readStorage<SavedRound[]>(STORAGE_KEYS.savedRounds, []))
   }, [])
 
   useEffect(() => {
@@ -73,18 +93,39 @@ function App() {
   }, [activeTab])
 
   useEffect(() => {
-    if (!copyFeedback) {
+    window.localStorage.setItem(STORAGE_KEYS.savedRounds, JSON.stringify(savedRounds))
+  }, [savedRounds])
+
+  useEffect(() => {
+    if (!copyFeedback && !saveFeedback) {
       return
     }
 
-    const timeout = window.setTimeout(() => setCopyFeedback(''), 1800)
+    const timeout = window.setTimeout(() => {
+      setCopyFeedback('')
+      setSaveFeedback('')
+    }, 1800)
     return () => window.clearTimeout(timeout)
-  }, [copyFeedback])
+  }, [copyFeedback, saveFeedback])
 
   const playerNameMap = useMemo(
     () => new Map(players.map((player, index) => [player.id, getPlayerLabel(player.name, index)])),
     [players],
   )
+
+  const runningTotals = useMemo<RunningTotal[]>(() => {
+    const totals = new Map<string, number>()
+
+    savedRounds.forEach((round) => {
+      round.players.forEach((player) => {
+        totals.set(player.name, (totals.get(player.name) ?? 0) + player.netAmount)
+      })
+    })
+
+    return Array.from(totals.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((first, second) => second.total - first.total)
+  }, [savedRounds])
 
   const handlePlayerCountChange = (nextCount: number) => {
     setPlayers((current) => {
@@ -194,6 +235,47 @@ function App() {
     } catch {
       setCopyFeedback('Clipboard copy failed.')
     }
+  }
+
+  const handleSaveResults = () => {
+    if (!result) {
+      return
+    }
+
+    const roundPlayers = players.map((player, index) => {
+      const name = getPlayerLabel(player.name, index)
+      const entry = result.netResults.find((netResult) => netResult.playerId === player.id)
+
+      return {
+        name,
+        cardsLeft: player.cardsLeft === '' ? 0 : Number(player.cardsLeft),
+        netAmount: entry?.netAmount ?? 0,
+      }
+    })
+
+    setSavedRounds((current) => [
+      {
+        id: `${Date.now()}`,
+        savedAt: new Date().toISOString(),
+        unitLabel: settings.unitLabel,
+        valuePerCard: settings.valuePerCard,
+        penaltyThreshold: settings.penaltyThreshold,
+        penaltyMultiplier: settings.penaltyMultiplier,
+        players: roundPlayers,
+      },
+      ...current,
+    ])
+    setSaveFeedback('Results saved.')
+    setShowHistory(true)
+  }
+
+  const handleResetSavedResults = () => {
+    if (!window.confirm('Reset all saved totals and round history?')) {
+      return
+    }
+
+    setSavedRounds([])
+    setShowHistory(false)
   }
 
   const commitCardsLeft = (playerId: string) => {
@@ -333,12 +415,11 @@ function App() {
                         onBlur={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
                         onClick={() => {
                           setHighlightedCombo(combo.id)
-                          const isCurrentlyOpen = expandedCards[combo.id] ?? false
                           setExpandedCards((current) => ({
                             ...current,
-                            [combo.id]: !isCurrentlyOpen,
+                            [combo.id]: !current[combo.id],
                           }))
-                          if (!isCurrentlyOpen) {
+                          if (!expandedCards[combo.id]) {
                             document
                               .getElementById(`combo-card-${combo.id}`)
                               ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -614,8 +695,12 @@ function App() {
                   </div>
                   <ul className="results-list">
                     {result.pairwisePayments.map((payment, index) => {
-                      const from = playerNameMap.get(payment.fromPlayerId) ?? payment.fromPlayerId
-                      const to = playerNameMap.get(payment.toPlayerId) ?? payment.toPlayerId
+                      const from =
+                        playerNameMap.get(payment.fromPlayerId) ??
+                        getResultPlayerNameById(players, payment.fromPlayerId)
+                      const to =
+                        playerNameMap.get(payment.toPlayerId) ??
+                        getResultPlayerNameById(players, payment.toPlayerId)
                       return (
                         <li
                           className="settlement-item"
@@ -646,9 +731,14 @@ function App() {
                 <article className="card results-card">
                   <div className="card-header">
                     <h2>Net totals</h2>
-                    <button className="pill-button" onClick={handleCopyResults}>
-                      Copy results
-                    </button>
+                    <div className="results-actions">
+                      <button className="pill-button" onClick={handleCopyResults}>
+                        Copy results
+                      </button>
+                      <button className="pill-button primary-pill-button" onClick={handleSaveResults}>
+                        Save results
+                      </button>
+                    </div>
                   </div>
                   <ul className="results-list net-list">
                     {result.netResults.map((entry) => {
@@ -661,10 +751,80 @@ function App() {
                       )
                     })}
                   </ul>
-                  {copyFeedback ? <p className="copy-feedback">{copyFeedback}</p> : null}
+                  {copyFeedback || saveFeedback ? (
+                    <p className="copy-feedback">{copyFeedback || saveFeedback}</p>
+                  ) : null}
                 </article>
               </section>
             ) : null}
+
+            <section className="card">
+              <button
+                className="section-toggle"
+                onClick={() => setShowHistory((current) => !current)}
+                aria-expanded={showHistory}
+              >
+                <h2>Saved totals</h2>
+                <span className="pill">{showHistory ? 'Hide' : 'Show'}</span>
+              </button>
+              {showHistory ? (
+                <div className="history-stack">
+                  <div className="history-header-row">
+                    <p className="section-copy history-summary">
+                      Running totals are grouped by the saved player names from each round.
+                    </p>
+                    <button className="ghost-button history-reset-button" onClick={handleResetSavedResults}>
+                      Reset all
+                    </button>
+                  </div>
+
+                  {runningTotals.length > 0 ? (
+                    <div className="saved-table">
+                      <div className="saved-table-head">
+                        <span>Player</span>
+                        <span>Total</span>
+                      </div>
+                      {runningTotals.map((entry) => (
+                        <div className="saved-table-row" key={entry.name}>
+                          <span>{entry.name}</span>
+                          <strong>{formatAmount(entry.total, settings.unitLabel)}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="section-copy">No saved rounds yet.</p>
+                  )}
+
+                  {savedRounds.length > 0 ? (
+                    <details className="history-details">
+                      <summary>Round history</summary>
+                      <div className="history-list">
+                        {savedRounds.map((round) => (
+                          <article className="history-card" key={round.id}>
+                            <div className="history-card-header">
+                              <strong>{new Date(round.savedAt).toLocaleString()}</strong>
+                              <span>
+                                {round.valuePerCard} {round.unitLabel || 'points'} per card
+                              </span>
+                            </div>
+                            <div className="history-round-table">
+                              {round.players.map((player) => (
+                                <div className="history-round-row" key={`${round.id}-${player.name}`}>
+                                  <span>
+                                    {player.name} · {player.cardsLeft} cards left
+                                  </span>
+                                  <strong>{formatAmount(player.netAmount, round.unitLabel)}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </details>
+                  ) : null}
+                </div>
+              ) : null}
+            </section>
           </>
         )}
       </main>
