@@ -1,6 +1,6 @@
 {
   "name": "Big 2 Helper",
-  "short_name": "Big 2",
+  "short_name": "Big 2 Helper",
   "start_url": "./?tab=cheat-sheet",
   "display": "standalone",
   "background_color": "#eef5ff",

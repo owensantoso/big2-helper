@@ -2,17 +2,15 @@
   <rect width="256" height="256" rx="60" fill="#1f5ea8" />
   <defs>
     <g id="spade-shape" fill="#221d1a">
-      <circle cx="-16" cy="-4" r="16" />
-      <circle cx="16" cy="-4" r="16" />
-      <path d="M0 -46 L-30 -4 H30 Z" />
-      <path d="M-10 10 C-10 24 -18 36 -28 46 C-12 45 -3 39 0 30 C3 39 12 45 28 46 C18 36 10 24 10 10 Z" />
+      <path d="M0 -48 C-7 -35 -26 -26 -26 -4 C-26 11 -15 23 0 23 C15 23 26 11 26 -4 C26 -26 7 -35 0 -48 Z" />
+      <path d="M-7 18 C-7 29 -12 39 -20 48 C-9 47 -2 41 0 33 C2 41 9 47 20 48 C12 39 7 29 7 18 Z" />
     </g>
   </defs>
-  <g transform="translate(48 34)">
-    <rect x="8" y="12" width="152" height="180" rx="28" fill="#fffdf8" />
-    <rect x="8" y="12" width="152" height="180" rx="28" fill="none" stroke="rgba(34,29,26,0.14)" stroke-width="4" />
-    <text x="34" y="60" font-family="Trebuchet MS, 'Segoe UI', sans-serif" font-size="44" font-weight="800" fill="#b63a3a">2</text>
-    <use href="#spade-shape" transform="translate(38 84) scale(0.33)" />
-    <use href="#spade-shape" transform="translate(84 128) scale(0.9)" />
+  <g transform="translate(52 28)">
+    <rect x="0" y="0" width="152" height="200" rx="30" fill="#fffdf8" />
+    <rect x="0" y="0" width="152" height="200" rx="30" fill="none" stroke="rgba(34,29,26,0.12)" stroke-width="4" />
+    <text x="22" y="50" font-family="Trebuchet MS, 'Segoe UI', sans-serif" font-size="42" font-weight="800" fill="#221d1a">2</text>
+    <use href="#spade-shape" transform="translate(30 72) scale(0.24)" />
+    <use href="#spade-shape" transform="translate(76 118) scale(0.84)" />
   </g>
 </svg>
