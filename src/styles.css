@@ -35,7 +35,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -53,7 +54,18 @@ input {
   text-align: left;
 }
 
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fffdf8;
+  padding: 0.82rem 0.95rem;
+  color: inherit;
+  text-align: left;
+}
+
 input:focus,
+select:focus,
 button:focus {
   outline: 3px solid rgba(31, 94, 168, 0.18);
   outline-offset: 2px;
@@ -747,8 +759,7 @@ label span {
 
 .saved-table-head,
 .saved-table-row,
-.history-round-row,
-.history-card-header {
+.history-round-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
@@ -798,9 +809,28 @@ label span {
 }
 
 .history-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
   margin-bottom: 0.7rem;
   color: var(--text-muted);
   font-size: 0.92rem;
+}
+
+.history-card-meta {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.history-delete-button {
+  border: 1px solid rgba(41, 71, 119, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--accent-strong);
+  padding: 0.5rem 0.8rem;
+  font-weight: 700;
 }
 
 .history-round-table {

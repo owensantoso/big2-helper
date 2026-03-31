@@ -31,6 +31,13 @@ const defaultSettings: CalculatorSettings = {
   penaltyMultiplier: 2,
 }
 
+const unitOptions = [
+  { label: 'Yen (¥)', value: '¥' },
+  { label: 'Points', value: 'points' },
+  { label: 'Dollar ($)', value: '$' },
+  { label: 'Pound (£)', value: '£' },
+]
+
 function readStorage<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key)
@@ -276,6 +283,14 @@ function App() {
 
     setSavedRounds([])
     setShowHistory(false)
+  }
+
+  const handleDeleteSavedRound = (roundId: string) => {
+    if (!window.confirm('Delete this saved round from history and totals?')) {
+      return
+    }
+
+    setSavedRounds((current) => current.filter((round) => round.id !== roundId))
   }
 
   const commitCardsLeft = (playerId: string) => {
@@ -630,12 +645,16 @@ function App() {
                     </label>
                     <label>
                       <span>Unit label</span>
-                      <input
-                        type="text"
+                      <select
                         value={settings.unitLabel}
                         onChange={(event) => updateSetting('unitLabel', event.target.value, false)}
-                        placeholder="points"
-                      />
+                      >
+                        {unitOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                     <label>
                       <span>Penalty threshold</span>
@@ -804,10 +823,18 @@ function App() {
                         {savedRounds.map((round) => (
                           <article className="history-card" key={round.id}>
                             <div className="history-card-header">
-                              <strong>{new Date(round.savedAt).toLocaleString()}</strong>
-                              <span>
-                                {round.valuePerCard} {round.unitLabel || 'points'} per card
-                              </span>
+                              <div className="history-card-meta">
+                                <strong>{new Date(round.savedAt).toLocaleString()}</strong>
+                                <span>
+                                  {round.valuePerCard} {round.unitLabel || 'points'} per card
+                                </span>
+                              </div>
+                              <button
+                                className="history-delete-button"
+                                onClick={() => handleDeleteSavedRound(round.id)}
+                              >
+                                Delete
+                              </button>
                             </div>
                             <div className="history-round-table">
                               {round.players.map((player) => (
