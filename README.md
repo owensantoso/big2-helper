@@ -8,6 +8,15 @@ Big Two Helper is a mobile-friendly static web app for quick in-person reference
 
 This app is designed for teaching and table-side use. It is not a full online Big Two game.
 
+Cheatsheet
+
+<img width="762" height="815" alt="Screenshot 2026-04-01 at 01 30 21" src="https://github.com/user-attachments/assets/cf96e952-f3ae-4c02-b1ac-fb7f494a1fb6" />
+
+Valid 5-card Hand Checker
+
+<img width="774" height="823" alt="Screenshot 2026-04-01 at 01 31 16" src="https://github.com/user-attachments/assets/35a28e7c-389a-4b1e-b5fa-92fbe52ff390" />
+
+
 ## Stack
 
 - React
