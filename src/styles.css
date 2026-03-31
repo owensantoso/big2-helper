@@ -1112,6 +1112,14 @@ label span {
     aspect-ratio: 0.7;
   }
 
+  .hand-checker-stack .checker-card-corner-suit {
+    top: 50%;
+    right: auto;
+    left: 50%;
+    font-size: 1rem;
+    transform: translate(-50%, -50%);
+  }
+
   .hand-checker-stack .checker-card + .checker-card {
     margin-top: 0;
     margin-left: -1.05rem;
