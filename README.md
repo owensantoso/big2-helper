@@ -66,9 +66,18 @@ The Vite config uses `base: './'` so the build works well as a static site, incl
 
 ## Language support prep
 
-The app is currently shipped in English only, but user-facing copy has been moved into [`src/content/en.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/en.ts) and loaded through [`src/content/index.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/index.ts).
+User-facing copy is loaded through [`src/content/index.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/index.ts), with locale bundles currently in [`src/content/en.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/en.ts) and [`src/content/ja.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/ja.ts).
 
-That keeps the current build simple while making it straightforward to add future locale bundles such as Japanese or Chinese without scattering UI text across the app.
+That keeps the current build simple while making it straightforward to add future locale bundles such as Chinese without scattering UI text across the app.
+
+The app now includes English and Japanese locale bundles, with the initial language chosen in this order:
+
+1. `?lang=` query parameter
+2. saved local preference
+3. browser language
+4. English fallback
+
+It also keeps the selected tab in the URL via `?tab=cheat-sheet` or `?tab=calculator`, while remaining a single-page app.
 
 ## Asset note
 

@@ -97,6 +97,14 @@ button:focus {
   padding: 1.25rem;
 }
 
+.hero-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .eyebrow {
   margin: 0 0 0.35rem;
   color: var(--accent-strong);
@@ -104,6 +112,26 @@ button:focus {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.language-picker {
+  display: inline-grid;
+  gap: 0.25rem;
+  min-width: 8rem;
+}
+
+.language-picker span {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.language-picker select {
+  padding: 0.65rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.9);
 }
 
 h1,

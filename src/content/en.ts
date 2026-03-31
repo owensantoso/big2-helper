@@ -87,6 +87,11 @@ export const content = {
     cheatSheet: 'Cheat Sheet',
     calculator: 'Calculator',
   },
+  language: {
+    label: 'Language',
+    en: 'English',
+    ja: '日本語',
+  },
   summary: {
     suitOrder: 'Suit order',
     rankOrder: 'Rank order',

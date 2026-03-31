@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { getContent } from './content'
+import { defaultLocale, getContent, type SupportedLocale } from './content'
 import { calculateSettlements, validatePlayers, validateSettings } from './lib/calculator'
 import type {
   CalculationResult,
@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   players: 'big2-helper:players',
   settings: 'big2-helper:settings',
   activeTab: 'big2-helper:active-tab',
+  locale: 'big2-helper:locale',
   savedRounds: 'big2-helper:saved-rounds',
 }
 
@@ -48,6 +49,67 @@ function formatAmount(amount: number, unitLabel: string): string {
 type HandCheckResult = {
   message: string
   comboId: string | null
+}
+
+function parseLocale(value: string | null): SupportedLocale | null {
+  if (!value) {
+    return null
+  }
+
+  const normalized = value.toLowerCase()
+  if (normalized === 'en') {
+    return 'en'
+  }
+
+  if (normalized === 'ja' || normalized === 'jp') {
+    return 'ja'
+  }
+
+  return null
+}
+
+function parseTab(value: string | null): TabId | null {
+  if (!value) {
+    return null
+  }
+
+  if (value === 'calculator') {
+    return 'calculator'
+  }
+
+  if (value === 'cheat-sheet' || value === 'cheatsheet' || value === 'cheat_sheet') {
+    return 'cheat-sheet'
+  }
+
+  return null
+}
+
+function getInitialLocale(): SupportedLocale {
+  const queryLocale = parseLocale(new URLSearchParams(window.location.search).get('lang'))
+  if (queryLocale) {
+    return queryLocale
+  }
+
+  const storedLocale = parseLocale(readStorage<string | null>(STORAGE_KEYS.locale, null))
+  if (storedLocale) {
+    return storedLocale
+  }
+
+  const browserLanguages = [...navigator.languages, navigator.language].filter(Boolean)
+  if (browserLanguages.some((language) => language.toLowerCase().startsWith('ja'))) {
+    return 'ja'
+  }
+
+  return defaultLocale
+}
+
+function getInitialTab(): TabId {
+  const queryTab = parseTab(new URLSearchParams(window.location.search).get('tab'))
+  if (queryTab) {
+    return queryTab
+  }
+
+  return readStorage<TabId>(STORAGE_KEYS.activeTab, 'cheat-sheet')
 }
 
 function classifySelectedHand(
@@ -120,7 +182,8 @@ function classifySelectedHand(
 }
 
 function App() {
-  const localeContent = getContent()
+  const [locale, setLocale] = useState<SupportedLocale>(getInitialLocale)
+  const localeContent = useMemo(() => getContent(locale), [locale])
   const { content, comboDetails, comboRanking, rankOrder } = localeContent
   const handCheckerSuits = content.handCheckerSuits
   const unitOptions = content.units
@@ -133,7 +196,7 @@ function App() {
     })),
   )
 
-  const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
+  const [activeTab, setActiveTab] = useState<TabId>(getInitialTab)
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
   const [settings, setSettings] = useState<CalculatorSettings>(defaultSettings)
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
@@ -164,7 +227,6 @@ function App() {
   useEffect(() => {
     setPlayers(readStorage<Player[]>(STORAGE_KEYS.players, defaultPlayers))
     setSettings(readStorage<CalculatorSettings>(STORAGE_KEYS.settings, defaultSettings))
-    setActiveTab(readStorage<TabId>(STORAGE_KEYS.activeTab, 'cheat-sheet'))
     setSavedRounds(readStorage<SavedRound[]>(STORAGE_KEYS.savedRounds, []))
   }, [])
 
@@ -181,8 +243,20 @@ function App() {
   }, [activeTab])
 
   useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.locale, JSON.stringify(locale))
+  }, [locale])
+
+  useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.savedRounds, JSON.stringify(savedRounds))
   }, [savedRounds])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    params.set('lang', locale)
+    params.set('tab', activeTab)
+    const nextUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`
+    window.history.replaceState({}, '', nextUrl)
+  }, [activeTab, locale])
 
   useEffect(() => {
     if (!copyFeedback && !saveFeedback) {
@@ -435,7 +509,16 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero-card">
-        <p className="eyebrow">{content.hero.eyebrow}</p>
+        <div className="hero-topbar">
+          <p className="eyebrow">{content.hero.eyebrow}</p>
+          <label className="language-picker">
+            <span>{content.language.label}</span>
+            <select value={locale} onChange={(event) => setLocale(event.target.value as SupportedLocale)}>
+              <option value="en">{content.language.en}</option>
+              <option value="ja">{content.language.ja}</option>
+            </select>
+          </label>
+        </div>
         <h1>{content.hero.title}</h1>
         <div className="hero-copy hero-subtitle">
           <ruby>
