@@ -304,6 +304,45 @@ h2 {
   font-weight: 900;
 }
 
+.valid-plays-grid {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.35rem;
+}
+
+.valid-play-card {
+  border: 1px solid rgba(41, 71, 119, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0.85rem 0.95rem;
+}
+
+.valid-play-card h3,
+.valid-play-card p,
+.invalid-play-note {
+  margin: 0;
+}
+
+.valid-play-card h3 {
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+}
+
+.valid-play-card p {
+  color: var(--text-muted);
+}
+
+.valid-play-example {
+  margin-top: 0.45rem !important;
+  color: var(--accent-strong) !important;
+  font-weight: 700;
+}
+
+.invalid-play-note {
+  margin-top: 0.9rem;
+  color: var(--text-muted);
+}
+
 .suit-order-item {
   display: flex;
   align-items: center;
@@ -860,6 +899,10 @@ label span {
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
+  }
+
+  .valid-plays-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .settings-grid {

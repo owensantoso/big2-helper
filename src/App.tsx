@@ -457,6 +457,33 @@ function App() {
               </div>
             </section>
 
+            <section className="card summary-card">
+              <div className="card-header">
+                <h2>Valid plays</h2>
+                <span className="pill">Quick guide</span>
+              </div>
+              <div className="valid-plays-grid">
+                <article className="valid-play-card">
+                  <h3>Singles</h3>
+                  <p>Play 1 card.</p>
+                  <p className="valid-play-example">Example: A♠</p>
+                </article>
+                <article className="valid-play-card">
+                  <h3>Doubles</h3>
+                  <p>Play 2 cards of the same rank.</p>
+                  <p className="valid-play-example">Example: 9♦ 9♣</p>
+                </article>
+                <article className="valid-play-card">
+                  <h3>Triples</h3>
+                  <p>Play 3 cards of the same rank.</p>
+                  <p className="valid-play-example">Example: Q♦ Q♣ Q♥</p>
+                </article>
+              </div>
+              <p className="invalid-play-note">
+                Unlike poker, <strong>two pair is not a valid play</strong> in this helper&apos;s ruleset.
+              </p>
+            </section>
+
             <section className="combo-grid">
               {comboDetails.map((combo) => {
                 const isOpen = expandedCards[combo.id] ?? false
