@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { comboDetails, comboRanking, rankOrder, suitOrder } from './data/bigTwoRules'
+import { getContent } from './content'
 import { calculateSettlements, validatePlayers, validateSettings } from './lib/calculator'
 import type {
   CalculationResult,
@@ -31,13 +31,6 @@ const defaultSettings: CalculatorSettings = {
   penaltyMultiplier: 2,
 }
 
-const unitOptions = [
-  { label: 'Yen (¥)', value: '¥' },
-  { label: 'Points', value: 'points' },
-  { label: 'Dollar ($)', value: '$' },
-  { label: 'Pound (£)', value: '£' },
-]
-
 function readStorage<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key)
@@ -52,43 +45,22 @@ function formatAmount(amount: number, unitLabel: string): string {
   return `${prefix}${amount}${unitLabel ? ` ${unitLabel}` : ''}`
 }
 
-function getPlayerLabel(name: string, index: number): string {
-  return name.trim() || `Player ${index + 1}`
-}
-
-function getResultPlayerNameById(players: Player[], playerId: string): string {
-  const index = players.findIndex((player) => player.id === playerId)
-  if (index === -1) {
-    return playerId
-  }
-  return getPlayerLabel(players[index].name, index)
-}
-
-const handCheckerSuits = [
-  { symbol: '♦', tone: 'red' as const, label: 'Diamonds' },
-  { symbol: '♣', tone: 'black' as const, label: 'Clubs' },
-  { symbol: '♥', tone: 'red' as const, label: 'Hearts' },
-  { symbol: '♠', tone: 'black' as const, label: 'Spades' },
-]
-
-const deckCards = handCheckerSuits.flatMap((suit) =>
-  rankOrder.map((rank) => ({
-    id: `${rank}${suit.symbol}`,
-    rank,
-    suit: suit.symbol,
-    tone: suit.tone,
-  })),
-)
-
 type HandCheckResult = {
   message: string
   comboId: string | null
 }
 
-function classifySelectedHand(selectedIds: string[]): HandCheckResult {
+function classifySelectedHand(
+  selectedIds: string[],
+  rankOrder: string[],
+  labels: {
+    waitingMessage: (count: number) => string
+    invalidHand: string
+  },
+): HandCheckResult {
   if (selectedIds.length !== 5) {
     return {
-      message: `Select 5 cards to check. (${selectedIds.length}/5 selected)`,
+      message: labels.waitingMessage(selectedIds.length),
       comboId: null,
     }
   }
@@ -142,12 +114,25 @@ function classifySelectedHand(selectedIds: string[]): HandCheckResult {
   }
 
   return {
-    message: 'Not a valid 5-card hand in this ruleset.',
+    message: labels.invalidHand,
     comboId: null,
   }
 }
 
 function App() {
+  const localeContent = getContent()
+  const { content, comboDetails, comboRanking, rankOrder } = localeContent
+  const handCheckerSuits = content.handCheckerSuits
+  const unitOptions = content.units
+  const deckCards = handCheckerSuits.flatMap((suit) =>
+    rankOrder.map((rank) => ({
+      id: `${rank}${suit.symbol}`,
+      rank,
+      suit: suit.symbol,
+      tone: suit.tone,
+    })),
+  )
+
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
   const [settings, setSettings] = useState<CalculatorSettings>(defaultSettings)
@@ -164,6 +149,17 @@ function App() {
   const [saveFeedback, setSaveFeedback] = useState('')
   const [selectedHandCards, setSelectedHandCards] = useState<string[]>([])
   const cardInputRefs = useRef<Array<HTMLInputElement | null>>([])
+
+  const getPlayerLabel = (name: string, index: number) =>
+    name.trim() || content.calculator.playerLabel(index)
+
+  const getResultPlayerNameById = (playersList: Player[], playerId: string) => {
+    const index = playersList.findIndex((player) => player.id === playerId)
+    if (index === -1) {
+      return playerId
+    }
+    return getPlayerLabel(playersList[index].name, index)
+  }
 
   useEffect(() => {
     setPlayers(readStorage<Player[]>(STORAGE_KEYS.players, defaultPlayers))
@@ -220,8 +216,8 @@ function App() {
   }, [savedRounds])
 
   const handCheckResult = useMemo(
-    () => classifySelectedHand(selectedHandCards),
-    [selectedHandCards],
+    () => classifySelectedHand(selectedHandCards, rankOrder, content.handChecker),
+    [content.handChecker, rankOrder, selectedHandCards],
   )
 
   useEffect(() => {
@@ -321,16 +317,16 @@ function App() {
     }
 
     const lines = [
-      'Big Two settlement',
+      content.misc.bigTwoSettlement,
       '',
-      'Pairwise:',
+      content.misc.pairwise,
       ...result.pairwisePayments.map((payment) => {
         const from = playerNameMap.get(payment.fromPlayerId) ?? payment.fromPlayerId
         const to = playerNameMap.get(payment.toPlayerId) ?? payment.toPlayerId
-        return `${from} owes ${to} ${payment.amount}${settings.unitLabel ? ` ${settings.unitLabel}` : ''}`
+        return `${from} ${content.calculator.owes} ${to} ${payment.amount}${settings.unitLabel ? ` ${settings.unitLabel}` : ''}`
       }),
       '',
-      'Net:',
+      content.misc.net,
       ...result.netResults.map((entry) => {
         const name = playerNameMap.get(entry.playerId) ?? entry.playerId
         return `${name}: ${formatAmount(entry.netAmount, settings.unitLabel)}`
@@ -339,9 +335,9 @@ function App() {
 
     try {
       await navigator.clipboard.writeText(lines)
-      setCopyFeedback('Results copied.')
+      setCopyFeedback(content.feedback.copied)
     } catch {
-      setCopyFeedback('Clipboard copy failed.')
+      setCopyFeedback(content.feedback.copyFailed)
     }
   }
 
@@ -373,12 +369,12 @@ function App() {
       },
       ...current,
     ])
-    setSaveFeedback('Results saved.')
+    setSaveFeedback(content.feedback.saved)
     setShowHistory(true)
   }
 
   const handleResetSavedResults = () => {
-    if (!window.confirm('Reset all saved totals and round history?')) {
+    if (!window.confirm(content.confirmations.resetHistory)) {
       return
     }
 
@@ -387,7 +383,7 @@ function App() {
   }
 
   const handleDeleteSavedRound = (roundId: string) => {
-    if (!window.confirm('Delete this saved round from history and totals?')) {
+    if (!window.confirm(content.confirmations.deleteRound)) {
       return
     }
 
@@ -441,17 +437,17 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero-card">
-        <p className="eyebrow">Big 2 Helper</p>
-        <h1>Big 2 Helper</h1>
+        <p className="eyebrow">{content.hero.eyebrow}</p>
+        <h1>{content.hero.title}</h1>
         <div className="hero-copy hero-subtitle">
           <ruby>
-            鋤大D
-            <rt>co2 daai6 di2</rt>
+            {content.hero.cantonese}
+            <rt>{content.hero.cantoneseRuby}</rt>
           </ruby>
           <span className="hero-divider">/</span>
           <ruby>
-            大老二
-            <rt>da lao er</rt>
+            {content.hero.mandarin}
+            <rt>{content.hero.mandarinRuby}</rt>
           </ruby>
         </div>
       </header>
@@ -461,13 +457,13 @@ function App() {
           className={activeTab === 'cheat-sheet' ? 'tab-button active' : 'tab-button'}
           onClick={() => setActiveTab('cheat-sheet')}
         >
-          Cheat Sheet
+          {content.tabs.cheatSheet}
         </button>
         <button
           className={activeTab === 'calculator' ? 'tab-button active' : 'tab-button'}
           onClick={() => setActiveTab('calculator')}
         >
-          Calculator
+          {content.tabs.calculator}
         </button>
       </nav>
 
@@ -477,8 +473,8 @@ function App() {
             <section className="summary-grid">
               <section className="card summary-card">
                 <div className="card-header">
-                  <h2>Suit order</h2>
-                  <span className="pill">Ascending</span>
+                  <h2>{content.summary.suitOrder}</h2>
+                  <span className="pill">{content.summary.ascending}</span>
                 </div>
                 <div className="suit-card-row" aria-label="Diamonds less than clubs less than hearts less than spades">
                   {[
@@ -497,16 +493,16 @@ function App() {
                   ))}
                 </div>
                 <div className="token-row suit-token-row">
-                  {suitOrder.map((suit) => (
+                  {handCheckerSuits.map((suit) => (
                     <span
                       className={
-                        suit.includes('Diamonds') || suit.includes('Hearts')
+                        suit.tone === 'red'
                           ? 'token suit-token suit-token-red'
                           : 'token suit-token suit-token-black'
                       }
-                      key={suit}
+                      key={suit.symbol}
                     >
-                      {suit}
+                      {suit.symbol} {suit.label}
                     </span>
                   ))}
                 </div>
@@ -514,8 +510,8 @@ function App() {
 
               <section className="card summary-card">
                 <div className="card-header">
-                  <h2>Rank order</h2>
-                  <span className="pill">3 low, 2 high</span>
+                  <h2>{content.summary.rankOrder}</h2>
+                  <span className="pill">{content.summary.rankHint}</span>
                 </div>
                 <div className="rank-fan" aria-label={rankOrder.join(' less than ')}>
                   {rankOrder.map((rank, index) => (
@@ -530,35 +526,37 @@ function App() {
 
             <section className="card summary-card">
               <div className="card-header">
-                <h2>Valid plays</h2>
-                <span className="pill">Quick guide</span>
+                <h2>{content.summary.validPlays}</h2>
+                <span className="pill">{content.summary.quickGuide}</span>
               </div>
               <div className="valid-plays-grid">
                 <article className="valid-play-card">
-                  <h3>Singles</h3>
-                  <p>Play 1 card.</p>
-                  <p className="valid-play-example">Example: A♠</p>
+                  <h3>{content.validPlays.singles}</h3>
+                  <p>{content.validPlays.singlesCopy}</p>
+                  <p className="valid-play-example">{content.validPlays.singlesExample}</p>
                 </article>
                 <article className="valid-play-card">
-                  <h3>Doubles</h3>
-                  <p>Play 2 cards of the same rank.</p>
-                  <p className="valid-play-example">Example: 9♦ 9♣</p>
+                  <h3>{content.validPlays.doubles}</h3>
+                  <p>{content.validPlays.doublesCopy}</p>
+                  <p className="valid-play-example">{content.validPlays.doublesExample}</p>
                 </article>
                 <article className="valid-play-card">
-                  <h3>Triples</h3>
-                  <p>Play 3 cards of the same rank.</p>
-                  <p className="valid-play-example">Example: Q♦ Q♣ Q♥</p>
+                  <h3>{content.validPlays.triples}</h3>
+                  <p>{content.validPlays.triplesCopy}</p>
+                  <p className="valid-play-example">{content.validPlays.triplesExample}</p>
                 </article>
               </div>
               <p className="invalid-play-note">
-                Unlike poker, <strong>two pair is not a valid play</strong> in this helper&apos;s ruleset.
+                {content.validPlays.invalidNotePrefix}
+                <strong>{content.validPlays.invalidNoteStrong}</strong>
+                {content.validPlays.invalidNoteSuffix}
               </p>
             </section>
 
             <section className="card summary-card">
               <div className="card-header">
-                <h2>5-card combo ranking</h2>
-                <span className="pill">Lowest to highest</span>
+                <h2>{content.summary.comboRanking}</h2>
+                <span className="pill">{content.summary.lowestToHighest}</span>
               </div>
               <div className="combo-ranking-strip" aria-label={comboRanking.join(' less than ')}>
                 {comboDetails.map((combo, index) => {
@@ -644,7 +642,9 @@ function App() {
                           />
                         ))}
                       </div>
-                      <p className="preview-caption">Example hand: {combo.validExample}</p>
+                      <p className="preview-caption">
+                        {content.comboDetails.exampleHand} {combo.validExample}
+                      </p>
                     </div>
 
                     {isOpen ? (
@@ -652,19 +652,19 @@ function App() {
                         <p>{combo.detail}</p>
                         <dl className="detail-list">
                           <div>
-                            <dt>Valid example</dt>
+                            <dt>{content.comboDetails.validExample}</dt>
                             <dd>{combo.validExample}</dd>
                           </div>
                           <div>
-                            <dt>Invalid example</dt>
+                            <dt>{content.comboDetails.invalidExample}</dt>
                             <dd>{combo.invalidExample}</dd>
                           </div>
                           <div>
-                            <dt>Tie-break</dt>
+                            <dt>{content.comboDetails.tieBreak}</dt>
                             <dd>{combo.tieBreak}</dd>
                           </div>
                           <div>
-                            <dt>Beaten by</dt>
+                            <dt>{content.comboDetails.beatenBy}</dt>
                             <dd>{combo.beats}</dd>
                           </div>
                         </dl>
@@ -681,29 +681,29 @@ function App() {
                 onClick={() => setShowHandChecker((current) => !current)}
                 aria-expanded={showHandChecker}
               >
-                <h2>Is this a hand?</h2>
-                <span className="pill">{showHandChecker ? 'Hide' : 'Show'}</span>
+                <h2>{content.summary.handChecker}</h2>
+                <span className="pill">{showHandChecker ? content.handChecker.hide : content.handChecker.show}</span>
               </button>
               {showHandChecker ? (
                 <>
                   <div className="hand-checker-header">
                     <p className="section-copy hand-checker-copy">
-                      Select exactly 5 cards. The result updates immediately when you hit 5.
+                      {content.handChecker.intro}
                     </p>
                     <button
                       className="pill-button"
                       onClick={() => setSelectedHandCards([])}
                       disabled={selectedHandCards.length === 0}
                     >
-                      Clear
+                      {content.handChecker.clear}
                     </button>
                   </div>
                   <div className="hand-checker-result">
                     <strong>{handCheckResult.message}</strong>
-                    <span>{selectedHandCards.length}/5 selected</span>
+                    <span>{content.handChecker.selectedCount(selectedHandCards.length)}</span>
                   </div>
                   <p className="hand-checker-helper">
-                    Suits stay grouped together, with the rank order running from 3 down to 2.
+                    {content.handChecker.helper}
                   </p>
                   <div className="hand-checker-deck">
                     {handCheckerSuits.map((suit) => (
@@ -754,16 +754,14 @@ function App() {
                 onClick={() => setShowMiniRules((current) => !current)}
                 aria-expanded={showMiniRules}
               >
-                <h2>How a round works</h2>
-                <span className="pill">{showMiniRules ? 'Hide' : 'Show'}</span>
+                <h2>{content.rules.title}</h2>
+                <span className="pill">{showMiniRules ? content.rules.hide : content.rules.show}</span>
               </button>
               {showMiniRules ? (
                 <ul className="rules-list">
-                  <li>Players try to get rid of all their cards.</li>
-                  <li>Higher valid plays beat lower valid plays.</li>
-                  <li>Passing is allowed.</li>
-                  <li>The round ends when one player has no cards left.</li>
-                  <li>Settlement is based on the cards each player still holds.</li>
+                  {content.rules.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
                 </ul>
               ) : null}
             </section>
@@ -772,7 +770,7 @@ function App() {
           <>
             <section className="card">
               <div className="card-header">
-                <h2>Players</h2>
+                <h2>{content.calculator.players}</h2>
                 <div className="segmented">
                   {[2, 3, 4].map((count) => (
                     <button
@@ -786,11 +784,13 @@ function App() {
                 </div>
               </div>
               <p className="section-copy">
-                The winner is the one player with <strong>0 cards left</strong>.
+                {content.calculator.winnerCopyPrefix}
+                <strong>{content.calculator.winnerCopyStrong}</strong>
+                {content.calculator.winnerCopySuffix}
               </p>
               <div className="player-columns" aria-hidden="true">
-                <span>Name</span>
-                <span>Cards left</span>
+                <span>{content.calculator.name}</span>
+                <span>{content.calculator.cardsLeft}</span>
               </div>
               <div className="player-list">
                 {players.map((player, index) => (
@@ -798,12 +798,12 @@ function App() {
                     <div className="player-field">
                       <input
                         type="text"
-                        aria-label={`Player ${index + 1} name`}
+                        aria-label={content.calculator.playerNameAria(index)}
                         value={player.name}
                         onChange={(event) => updatePlayer(player.id, 'name', event.target.value)}
                         onFocus={(event) => event.currentTarget.select()}
                         onClick={(event) => event.currentTarget.select()}
-                        placeholder={`Player ${index + 1}`}
+                        placeholder={content.calculator.playerLabel(index)}
                       />
                     </div>
                     <div className="player-field">
@@ -812,7 +812,7 @@ function App() {
                         ref={(node) => {
                           cardInputRefs.current[index] = node
                         }}
-                        aria-label={`${getPlayerLabel(player.name, index)} cards left`}
+                        aria-label={content.calculator.cardsLeftAria(getPlayerLabel(player.name, index))}
                         inputMode="numeric"
                         min="0"
                         value={player.cardsLeft}
@@ -834,10 +834,14 @@ function App() {
                 aria-expanded={showSettings}
               >
                 <div>
-                  <h2>Settings</h2>
+                <h2>{content.calculator.settings}</h2>
                   <p className="section-copy settings-summary">
-                    {settings.valuePerCard} {settings.unitLabel || 'points'} per card, threshold{' '}
-                    {settings.penaltyThreshold}, multiplier {settings.penaltyMultiplier}
+                    {content.calculator.settingsSummary(
+                      settings.valuePerCard,
+                      settings.unitLabel,
+                      settings.penaltyThreshold,
+                      settings.penaltyMultiplier,
+                    )}
                   </p>
                 </div>
                 <span className="settings-icon" aria-hidden="true">
@@ -848,7 +852,7 @@ function App() {
                 <>
                   <div className="settings-grid">
                     <label>
-                      <span>Value per card</span>
+                      <span>{content.calculator.valuePerCard}</span>
                       <input
                         type="number"
                         inputMode="decimal"
@@ -859,7 +863,7 @@ function App() {
                       />
                     </label>
                     <label>
-                      <span>Unit label</span>
+                      <span>{content.calculator.unitLabel}</span>
                       <select
                         value={settings.unitLabel}
                         onChange={(event) => updateSetting('unitLabel', event.target.value, false)}
@@ -872,7 +876,7 @@ function App() {
                       </select>
                     </label>
                     <label>
-                      <span>Penalty threshold</span>
+                      <span>{content.calculator.penaltyThreshold}</span>
                       <input
                         type="number"
                         inputMode="numeric"
@@ -883,7 +887,7 @@ function App() {
                       />
                     </label>
                     <label>
-                      <span>Penalty multiplier</span>
+                      <span>{content.calculator.penaltyMultiplier}</span>
                       <input
                         type="number"
                         inputMode="decimal"
@@ -895,8 +899,9 @@ function App() {
                     </label>
                   </div>
                   <p className="section-copy">
-                    If a payer has cards left greater than or equal to the threshold, the
-                    multiplier applies to <strong>every pairwise payment they make</strong>.
+                    {content.calculator.multiplierCopyPrefix}
+                    <strong>{content.calculator.multiplierCopyStrong}</strong>
+                    {content.calculator.multiplierCopySuffix}
                   </p>
                 </>
               ) : null}
@@ -904,16 +909,16 @@ function App() {
 
             <section className="action-row">
               <button className="primary-button" onClick={handleCalculate}>
-                Calculate settlement
+                {content.calculator.calculate}
               </button>
               <button className="ghost-button" onClick={handleReset}>
-                Reset example
+                {content.calculator.reset}
               </button>
             </section>
 
             {errors.length > 0 ? (
               <section className="card error-card" aria-live="polite">
-                <h2>Check these inputs</h2>
+                <h2>{content.calculator.checkInputs}</h2>
                 <ul className="error-list">
                   {errors.map((error) => (
                     <li key={error}>{error}</li>
@@ -926,8 +931,8 @@ function App() {
               <section className="results-grid">
                 <article className="card results-card">
                   <div className="card-header">
-                    <h2>Pairwise settlements</h2>
-                    <span className="pill">Difference-based</span>
+                    <h2>{content.calculator.pairwiseSettlements}</h2>
+                    <span className="pill">{content.calculator.differenceBased}</span>
                   </div>
                   <ul className="results-list">
                     {result.pairwisePayments.map((payment, index) => {
@@ -944,7 +949,7 @@ function App() {
                         >
                           <div className="settlement-main">
                             <strong>{from}</strong>
-                            <span>owes</span>
+                            <span>{content.calculator.owes}</span>
                             <strong>{to}</strong>
                           </div>
                           <div className="settlement-amount">
@@ -966,13 +971,13 @@ function App() {
 
                 <article className="card results-card">
                   <div className="card-header">
-                    <h2>Net totals</h2>
+                    <h2>{content.calculator.netTotals}</h2>
                     <div className="results-actions">
                       <button className="pill-button" onClick={handleCopyResults}>
-                        Copy results
+                        {content.calculator.copyResults}
                       </button>
                       <button className="pill-button primary-pill-button" onClick={handleSaveResults}>
-                        Save results
+                        {content.calculator.saveResults}
                       </button>
                     </div>
                   </div>
@@ -1000,25 +1005,25 @@ function App() {
                 onClick={() => setShowHistory((current) => !current)}
                 aria-expanded={showHistory}
               >
-                <h2>Saved totals</h2>
-                <span className="pill">{showHistory ? 'Hide' : 'Show'}</span>
+                <h2>{content.calculator.savedTotals}</h2>
+                <span className="pill">{showHistory ? content.handChecker.hide : content.handChecker.show}</span>
               </button>
               {showHistory ? (
                 <div className="history-stack">
                   <div className="history-header-row">
                     <p className="section-copy history-summary">
-                      Running totals are grouped by the saved player names from each round.
+                      {content.calculator.runningTotalsCopy}
                     </p>
                     <button className="ghost-button history-reset-button" onClick={handleResetSavedResults}>
-                      Reset all
+                      {content.calculator.resetAll}
                     </button>
                   </div>
 
                   {runningTotals.length > 0 ? (
                     <div className="saved-table">
                       <div className="saved-table-head">
-                        <span>Player</span>
-                        <span>Total</span>
+                        <span>{content.history.player}</span>
+                        <span>{content.history.total}</span>
                       </div>
                       {runningTotals.map((entry) => (
                         <div className="saved-table-row" key={entry.name}>
@@ -1028,12 +1033,12 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <p className="section-copy">No saved rounds yet.</p>
+                    <p className="section-copy">{content.calculator.noSavedRounds}</p>
                   )}
 
                   {savedRounds.length > 0 ? (
                     <details className="history-details">
-                      <summary>Round history</summary>
+                      <summary>{content.calculator.roundHistory}</summary>
                       <div className="history-list">
                         {savedRounds.map((round) => (
                           <article className="history-card" key={round.id}>
@@ -1041,21 +1046,26 @@ function App() {
                               <div className="history-card-meta">
                                 <strong>{new Date(round.savedAt).toLocaleString()}</strong>
                                 <span>
-                                  {round.valuePerCard} {round.unitLabel || 'points'} per card
+                                  {content.calculator.settingsSummary(
+                                    round.valuePerCard,
+                                    round.unitLabel,
+                                    round.penaltyThreshold,
+                                    round.penaltyMultiplier,
+                                  )}
                                 </span>
                               </div>
                               <button
                                 className="history-delete-button"
                                 onClick={() => handleDeleteSavedRound(round.id)}
                               >
-                                Delete
+                                {content.calculator.delete}
                               </button>
                             </div>
                             <div className="history-round-table">
                               {round.players.map((player) => (
                                 <div className="history-round-row" key={`${round.id}-${player.name}`}>
                                   <span>
-                                    {player.name} · {player.cardsLeft} cards left
+                                    {player.name} · {player.cardsLeft} {content.calculator.cardsLeftSuffix}
                                   </span>
                                   <strong>{formatAmount(player.netAmount, round.unitLabel)}</strong>
                                 </div>

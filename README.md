@@ -64,6 +64,12 @@ The Vite config uses `base: './'` so the build works well as a static site, incl
 - copy-to-clipboard results button
 - localStorage persistence for recent players, settings, and last tab
 
+## Language support prep
+
+The app is currently shipped in English only, but user-facing copy has been moved into [`src/content/en.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/en.ts) and loaded through [`src/content/index.ts`](/Users/macintoso/Documents/VSCode/big2-helper/src/content/index.ts).
+
+That keeps the current build simple while making it straightforward to add future locale bundles such as Japanese or Chinese without scattering UI text across the app.
+
 ## Asset note
 
 The combo example card images in `public/cards/` are free SVG playing card assets sourced from Wikimedia Commons public-domain files.

@@ -618,6 +618,7 @@ h2 {
   min-width: 0;
   padding: 0.32rem 0.38rem;
   font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .combo-card,
