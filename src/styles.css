@@ -456,7 +456,6 @@ h2 {
 .checker-card:hover {
   transform: translateY(-1px);
   border-color: rgba(31, 94, 168, 0.28);
-  z-index: 2;
 }
 
 .checker-card-selected {
@@ -481,13 +480,6 @@ h2 {
   top: 0.34rem;
   right: 0.36rem;
   font-size: 0.78rem;
-  line-height: 1;
-}
-
-.checker-card-suit {
-  align-self: center;
-  justify-self: center;
-  font-size: 1.05rem;
   line-height: 1;
 }
 
@@ -1093,15 +1085,17 @@ label span {
 
   .hand-checker-suit-group {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 7.5rem minmax(0, 1fr);
     align-items: start;
     gap: 0.7rem;
   }
 
   .hand-checker-suit-badge {
-    align-self: start;
+    align-self: center;
+    width: 7rem;
+    justify-content: center;
     margin-bottom: 0;
-    margin-top: 0.6rem;
+    margin-top: 0;
     font-size: 0.78rem;
   }
 

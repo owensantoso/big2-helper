@@ -737,7 +737,6 @@ function App() {
                               >
                                 <span className="checker-card-rank">{rank}</span>
                                 <span className="checker-card-corner-suit">{suit.symbol}</span>
-                                <span className="checker-card-suit">{suit.symbol}</span>
                               </button>
                             )
                           })}
