@@ -44,7 +44,7 @@ export const comboDetails: ComboInfo[] = [
     validExample: '3♠ 6♠ 8♠ J♠ A♠',
     invalidExample: '4♥ 7♥ 9♥ Q♦ A♥',
     tieBreak: 'Higher suit wins first; if same suit, compare highest card.',
-    beats: 'Any straight, or a lower flush. It loses to full house, four of a kind, and straight flush.',
+    beats: 'A higher flush, plus any full house, four of a kind, or straight flush.',
     exampleCards: ['3S', '6S', '8S', 'JS', 'AS'],
   },
   {
@@ -55,7 +55,7 @@ export const comboDetails: ComboInfo[] = [
     validExample: '9♦ 9♣ 9♠ K♥ K♣',
     invalidExample: '5♦ 5♣ 8♥ 8♠ A♦',
     tieBreak: 'Compare the triple rank only.',
-    beats: 'Any straight or flush, and a lower full house. It loses to four of a kind and straight flush.',
+    beats: 'A higher full house, plus any four of a kind or straight flush.',
     exampleCards: ['9D', '9C', '9S', 'KH', 'KC'],
   },
   {
@@ -66,7 +66,7 @@ export const comboDetails: ComboInfo[] = [
     validExample: 'Q♦ Q♣ Q♥ Q♠ 3♦',
     invalidExample: 'J♦ J♣ J♥ 7♠ 7♦',
     tieBreak: 'Compare the rank of the four matching cards.',
-    beats: 'Any straight, flush, full house, or lower four of a kind. It only loses to straight flush.',
+    beats: 'A higher four of a kind, or any straight flush.',
     exampleCards: ['QD', 'QC', 'QH', 'QS', '3D'],
   },
   {
@@ -77,7 +77,7 @@ export const comboDetails: ComboInfo[] = [
     validExample: '5♥ 6♥ 7♥ 8♥ 9♥',
     invalidExample: '6♣ 7♣ 8♣ 9♣ J♣',
     tieBreak: 'Highest card wins; if tied, compare the suit of that highest card.',
-    beats: 'Everything below it.',
+    beats: 'Only a higher straight flush.',
     exampleCards: ['5H', '6H', '7H', '8H', '9H'],
   },
 ]

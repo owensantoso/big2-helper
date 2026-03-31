@@ -41,8 +41,6 @@ function getPlayerLabel(name: string, index: number): string {
   return name.trim() || `Player ${index + 1}`
 }
 
-const rankPreviewSuits = ['♦', '♣', '♥', '♠']
-
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('cheat-sheet')
   const [players, setPlayers] = useState<Player[]>(defaultPlayers)
@@ -307,20 +305,11 @@ function App() {
                 <span className="pill">3 low, 2 high</span>
               </div>
               <div className="rank-fan" aria-label={rankOrder.join(' less than ')}>
-                {rankOrder.map((rank, index) => {
-                  const suit = rankPreviewSuits[index % rankPreviewSuits.length]
-                  const isRed = suit === '♦' || suit === '♥'
-                  return (
-                    <div
-                      className={isRed ? 'rank-card rank-card-red' : 'rank-card rank-card-black'}
-                      key={rank}
-                      style={{ zIndex: index + 1 }}
-                    >
+                {rankOrder.map((rank, index) => (
+                  <div className="rank-card rank-card-plain" key={rank} style={{ zIndex: index + 1 }}>
                       <span className="rank-card-rank">{rank}</span>
-                      <span className="rank-card-suit">{suit}</span>
                     </div>
-                  )
-                })}
+                ))}
               </div>
               <p className="rank-helper">{rankOrder.join(' < ')}</p>
             </section>
@@ -344,13 +333,16 @@ function App() {
                         onBlur={() => setHighlightedCombo((current) => (current === combo.id ? null : current))}
                         onClick={() => {
                           setHighlightedCombo(combo.id)
+                          const isCurrentlyOpen = expandedCards[combo.id] ?? false
                           setExpandedCards((current) => ({
                             ...current,
-                            [combo.id]: true,
+                            [combo.id]: !isCurrentlyOpen,
                           }))
-                          document
-                            .getElementById(`combo-card-${combo.id}`)
-                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                          if (!isCurrentlyOpen) {
+                            document
+                              .getElementById(`combo-card-${combo.id}`)
+                              ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                          }
                         }}
                       >
                         <span className="combo-rank-number">{index + 1}</span>
