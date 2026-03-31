@@ -80,9 +80,17 @@ const deckCards = handCheckerSuits.flatMap((suit) =>
   })),
 )
 
-function classifySelectedHand(selectedIds: string[]): string {
+type HandCheckResult = {
+  message: string
+  comboId: string | null
+}
+
+function classifySelectedHand(selectedIds: string[]): HandCheckResult {
   if (selectedIds.length !== 5) {
-    return `Select 5 cards to check. (${selectedIds.length}/5 selected)`
+    return {
+      message: `Select 5 cards to check. (${selectedIds.length}/5 selected)`,
+      comboId: null,
+    }
   }
 
   const cards = selectedIds.map((id) => {
@@ -114,26 +122,29 @@ function classifySelectedHand(selectedIds: string[]): string {
     )
 
   if (isStraight && isFlush) {
-    return 'Straight Flush'
+    return { message: 'Straight Flush', comboId: 'straight-flush' }
   }
 
   if (rankCounts[0] === 4) {
-    return 'Four of a Kind'
+    return { message: 'Four of a Kind', comboId: 'four-of-a-kind' }
   }
 
   if (rankCounts[0] === 3 && rankCounts[1] === 2) {
-    return 'Full House'
+    return { message: 'Full House', comboId: 'full-house' }
   }
 
   if (isFlush) {
-    return 'Flush'
+    return { message: 'Flush', comboId: 'flush' }
   }
 
   if (isStraight) {
-    return 'Straight'
+    return { message: 'Straight', comboId: 'straight' }
   }
 
-  return 'Not a valid 5-card hand in this ruleset.'
+  return {
+    message: 'Not a valid 5-card hand in this ruleset.',
+    comboId: null,
+  }
 }
 
 function App() {
@@ -211,6 +222,17 @@ function App() {
     () => classifySelectedHand(selectedHandCards),
     [selectedHandCards],
   )
+
+  useEffect(() => {
+    if (handCheckResult.comboId) {
+      setHighlightedCombo(handCheckResult.comboId)
+      setExpandedCards({ [handCheckResult.comboId]: true })
+      return
+    }
+
+    setHighlightedCombo(null)
+    setExpandedCards({})
+  }, [handCheckResult])
 
   const handlePlayerCountChange = (nextCount: number) => {
     setPlayers((current) => {
@@ -576,63 +598,6 @@ function App() {
               </div>
             </section>
 
-            <section className="card summary-card">
-              <div className="card-header">
-                <h2>Is this a hand?</h2>
-                <span className="pill">Pick 5 cards</span>
-              </div>
-              <div className="hand-checker-header">
-                <p className="section-copy hand-checker-copy">
-                  Select exactly 5 cards. The result updates immediately when you hit 5.
-                </p>
-                <button
-                  className="pill-button"
-                  onClick={() => setSelectedHandCards([])}
-                  disabled={selectedHandCards.length === 0}
-                >
-                  Clear
-                </button>
-              </div>
-              <div className="hand-checker-result">
-                <strong>{handCheckResult}</strong>
-                <span>{selectedHandCards.length}/5 selected</span>
-              </div>
-              <div className="hand-checker-suits" aria-hidden="true">
-                {handCheckerSuits.map((suit) => (
-                  <span
-                    className={suit.tone === 'red' ? 'token suit-token suit-token-red' : 'token suit-token suit-token-black'}
-                    key={suit.symbol}
-                  >
-                    {suit.symbol} {suit.label}
-                  </span>
-                ))}
-              </div>
-              <p className="hand-checker-helper">
-                Suit order runs left to right on mobile, and top to bottom on wider screens.
-              </p>
-              <div className="hand-checker-grid">
-                {deckCards.map((card) => {
-                  const isSelected = selectedHandCards.includes(card.id)
-                  return (
-                    <button
-                      type="button"
-                      key={card.id}
-                      className={
-                        isSelected
-                          ? `checker-card checker-card-selected checker-card-${card.tone}`
-                          : `checker-card checker-card-${card.tone}`
-                      }
-                      onClick={() => toggleHandCard(card.id)}
-                      aria-pressed={isSelected}
-                    >
-                      <span className="checker-card-rank">{card.rank}</span>
-                      <span className="checker-card-suit">{card.suit}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-
             <section className="combo-grid">
               {comboDetails.map((combo) => {
                 const isOpen = expandedCards[combo.id] ?? false
@@ -707,6 +672,63 @@ function App() {
                   </article>
                 )
               })}
+            </section>
+
+            <section className="card summary-card">
+              <div className="card-header">
+                <h2>Is this a hand?</h2>
+                <span className="pill">Pick 5 cards</span>
+              </div>
+              <div className="hand-checker-header">
+                <p className="section-copy hand-checker-copy">
+                  Select exactly 5 cards. The result updates immediately when you hit 5.
+                </p>
+                <button
+                  className="pill-button"
+                  onClick={() => setSelectedHandCards([])}
+                  disabled={selectedHandCards.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="hand-checker-result">
+                <strong>{handCheckResult.message}</strong>
+                <span>{selectedHandCards.length}/5 selected</span>
+              </div>
+              <div className="hand-checker-suits" aria-hidden="true">
+                {handCheckerSuits.map((suit) => (
+                  <span
+                    className={suit.tone === 'red' ? 'token suit-token suit-token-red' : 'token suit-token suit-token-black'}
+                    key={suit.symbol}
+                  >
+                    {suit.symbol} {suit.label}
+                  </span>
+                ))}
+              </div>
+              <p className="hand-checker-helper">
+                Suit order runs left to right on mobile, and top to bottom on wider screens.
+              </p>
+              <div className="hand-checker-grid">
+                {deckCards.map((card) => {
+                  const isSelected = selectedHandCards.includes(card.id)
+                  return (
+                    <button
+                      type="button"
+                      key={card.id}
+                      className={
+                        isSelected
+                          ? `checker-card checker-card-selected checker-card-${card.tone}`
+                          : `checker-card checker-card-${card.tone}`
+                      }
+                      onClick={() => toggleHandCard(card.id)}
+                      aria-pressed={isSelected}
+                    >
+                      <span className="checker-card-rank">{card.rank}</span>
+                      <span className="checker-card-suit">{card.suit}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </section>
 
             <section className="card">
